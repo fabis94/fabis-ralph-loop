@@ -1,0 +1,75 @@
+---
+name: update-skill
+description: Create, update, or manage universal-ai-config skill templates. Handles finding existing skills, deciding whether to create or modify, and writing the template.
+---
+
+# Manage Skill Templates
+
+Skills are reusable actions or workflows invocable as slash commands or auto-triggered by the AI.
+
+## Finding Existing Skills
+
+List directories in `<%= skillTemplatePath() %>/` to discover existing skills. Each skill is a directory containing a `SKILL.md` file. Read the `SKILL.md` frontmatter to understand what each skill does.
+
+## Additional Template Directories
+
+This project may have additional template directories configured via `additionalTemplateDirs`. To find them, search the project root for **all** config files matching `universal-ai-config.*` (e.g. `universal-ai-config.config.ts`, `universal-ai-config.overrides.config.ts`, and any other variants) and read the `additionalTemplateDirs` field from each. If the user asks to update a template that doesn't exist in the main templates directory, or explicitly refers to shared/global/external templates:
+
+1. Read all `universal-ai-config.*` config files in the project root to find `additionalTemplateDirs` paths
+2. Search those directories for the relevant skill
+3. **IMPORTANT:** Before editing any file outside the main `<%= config.templatesDir %>/` directory, ask the user for explicit confirmation — these are shared templates that may affect other projects
+
+## Deciding What to Do
+
+- **Create new**: when the task/workflow is distinct from existing skills
+- **Update existing**: when a skill covers similar ground but needs changes — modify its `SKILL.md` or supporting files
+- **Delete**: remove the entire skill directory when a skill is obsolete
+
+## Creating a New Skill
+
+1. Create a directory: `<%= skillTemplatePath() %>/{skill-name}/`
+2. Create `SKILL.md` inside it with frontmatter and instructions
+3. Optionally add supporting files (templates, scripts, examples) in the same directory
+
+### Frontmatter Fields
+
+See the **Skills** section in `<%= instructionPath('uac-template-guide') %>` for the complete field reference and per-target override syntax. Key fields: `name`, `description`, `disableAutoInvocation`, `userInvocable`, `allowedTools`, `model`, `hooks`.
+
+### Supporting Files
+
+Skills can include additional files in their directory. These are automatically copied to generated output during `uac generate`. `.md` extra files are rendered through EJS (with access to `target`, `config`, path helpers), while non-`.md` files are copied as-is.
+
+```
+my-skill/
+├── SKILL.md          # Main instructions (required)
+├── template.md       # Template for the AI to fill in (EJS rendered)
+├── examples/
+│   └── sample.md     # Example output (EJS rendered)
+└── scripts/
+    └── helper.sh     # Script the AI can execute (copied raw)
+```
+
+Reference supporting files from `SKILL.md` so the AI knows they exist.
+
+### Example
+
+```markdown
+---
+name: create-component
+description: Scaffold a new React component with tests and styles
+argumentHint: '[component-name]'
+---
+
+Create a new React component named $ARGUMENTS:
+
+1. Create the component file in src/components/
+2. Add unit tests
+3. Add a Storybook story
+4. Export from the components index
+```
+
+## After Changes
+
+Run `uac generate` to regenerate target-specific config files and verify the output.
+
+**Reminder:** Always edit templates in `<%= skillTemplatePath() %>/` — never edit generated target-specific files directly.

@@ -10,6 +10,13 @@ export default tseslint.config(
     ignores: ['dist/', 'node_modules/', 'tests/fixtures/'],
   },
   {
+    languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
     files: ['tests/**/*.ts'],
     rules: {
       '@typescript-eslint/no-non-null-assertion': 'off',

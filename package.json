@@ -50,6 +50,7 @@
     "tsdown": "^0.12.4",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.55.0",
+    "universal-ai-config": "^1.6.0",
     "vitest": "^3.0.5"
   },
   "lint-staged": {

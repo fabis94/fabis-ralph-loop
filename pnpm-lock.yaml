@@ -62,6 +62,9 @@ importers:
       typescript-eslint:
         specifier: ^8.55.0
         version: 8.55.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
+      universal-ai-config:
+        specifier: ^1.6.0
+        version: 1.6.0(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1)
       vitest:
         specifier: ^3.0.5
         version: 3.2.4(@types/node@22.19.11)(jiti@2.6.1)(yaml@2.8.2)
@@ -1325,6 +1328,29 @@ packages:
       magicast:
         optional: true
 
+  c12@4.0.0-beta.2:
+    resolution:
+      {
+        integrity: sha512-u2MKpLudcF5rXP33y/tj42fBtd08SXc2BdyGJM0HC8jDNGP+CjmB3A9BnlnCywBlutgAABu1m63zHnqDUlmWjg==,
+      }
+    peerDependencies:
+      chokidar: ^5
+      dotenv: '*'
+      giget: '*'
+      jiti: '*'
+      magicast: '*'
+    peerDependenciesMeta:
+      chokidar:
+        optional: true
+      dotenv:
+        optional: true
+      giget:
+        optional: true
+      jiti:
+        optional: true
+      magicast:
+        optional: true
+
   cac@6.7.14:
     resolution:
       {
@@ -1528,6 +1554,14 @@ packages:
         integrity: sha512-UeJmFfOrAQS8OJWPZ4qtgHyWExa088/MtK5UEyoJGFH67cDEXkZSviOiKRCZ4Xij0zxI3JECgYs3oKx+AizQBA==,
       }
     engines: { node: '>=0.10.0' }
+    hasBin: true
+
+  ejs@4.0.1:
+    resolution:
+      {
+        integrity: sha512-krvQtxc0btwSm/nvnt1UpnaFDFVJpJ0fdckmALpCgShsr/iGYHTnJiUliZTgmzq/UxTX33TtOQVKaNigMQp/6Q==,
+      }
+    engines: { node: '>=0.12.18' }
     hasBin: true
 
   emoji-regex@10.6.0:
@@ -2416,6 +2450,12 @@ packages:
         integrity: sha512-btXCnMmRIBINM2LDZoEmOogIZU7Qe7zn4BpomSKZ/ykbLObuBdvG+mFq11DL6fjH1DRwHhrlgtYWG96bJiC7Cg==,
       }
 
+  rc9@3.0.0:
+    resolution:
+      {
+        integrity: sha512-MGOue0VqscKWQ104udASX/3GYDcKyPI4j4F8gu/jHHzglpmy9a/anZK3PNe8ug6aZFl+9GxLtdhe3kVZuMaQbA==,
+      }
+
   readdirp@4.1.2:
     resolution:
       {
@@ -2784,6 +2824,13 @@ packages:
         integrity: sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==,
       }
     engines: { node: '>=18' }
+
+  universal-ai-config@1.6.0:
+    resolution:
+      {
+        integrity: sha512-apAmYvOHcG/WZSZ+8L7kBAS1IWZjKHc6UOR6Ju+0Qy1pzSOY56PyFwUBzEGwfE4Hdc9X3tN7nVFUxid9wY4++A==,
+      }
+    hasBin: true
 
   uri-js@4.4.1:
     resolution:
@@ -3569,6 +3616,20 @@ snapshots:
       pkg-types: 2.3.0
       rc9: 2.1.2
 
+  c12@4.0.0-beta.2(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1):
+    dependencies:
+      confbox: 0.2.4
+      defu: 6.1.4
+      exsolve: 1.0.8
+      pathe: 2.0.3
+      pkg-types: 2.3.0
+      rc9: 3.0.0
+    optionalDependencies:
+      chokidar: 5.0.0
+      dotenv: 17.3.1
+      giget: 2.0.0
+      jiti: 2.6.1
+
   cac@6.7.14: {}
 
   callsites@3.1.0: {}
@@ -3656,6 +3717,10 @@ snapshots:
       oxc-resolver: 11.17.1
 
   ejs@3.1.10:
+    dependencies:
+      jake: 10.9.4
+
+  ejs@4.0.1:
     dependencies:
       jake: 10.9.4
 
@@ -4196,6 +4261,11 @@ snapshots:
       defu: 6.1.4
       destr: 2.0.5
 
+  rc9@3.0.0:
+    dependencies:
+      defu: 6.1.4
+      destr: 2.0.5
+
   readdirp@4.1.2: {}
 
   readdirp@5.0.0: {}
@@ -4426,6 +4496,22 @@ snapshots:
   undici-types@6.21.0: {}
 
   unicorn-magic@0.3.0: {}
+
+  universal-ai-config@1.6.0(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1):
+    dependencies:
+      c12: 4.0.0-beta.2(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1)
+      citty: 0.2.1
+      consola: 3.4.2
+      ejs: 4.0.1
+      picomatch: 4.0.3
+      yaml: 2.8.2
+      zod: 4.3.6
+    transitivePeerDependencies:
+      - chokidar
+      - dotenv
+      - giget
+      - jiti
+      - magicast
 
   uri-js@4.4.1:
     dependencies:
