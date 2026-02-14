@@ -1,0 +1,80 @@
+<%= generatedHeader %>
+FROM <%= baseImage %>
+
+# === System packages ===
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    vim \
+    git \
+    curl \
+    jq \
+    sudo \
+    direnv \
+<% for (const pkg of systemPackages) { -%>
+    <%= pkg %> \
+<% } -%>
+    && rm -rf /var/lib/apt/lists/*
+<% if (installNode) { %>
+# === Node.js 22 (base image is not node-based) ===
+# hadolint ignore=DL3008,DL3009
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs
+<% } -%>
+<% if (playwright) { %>
+# === Playwright/Chromium dependencies ===
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    chromium \
+    fonts-liberation \
+    libnss3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libxdamage1 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    libxshmfence1 \
+    && rm -rf /var/lib/apt/lists/*
+<% } -%>
+<% for (const instruction of hooks.rootSetup) { %>
+<%= instruction %>
+<% } -%>
+
+# === User setup ===
+RUN echo 'node ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+# Hook direnv into bash for interactive shells
+# SC2016: single quotes are intentional
+# hadolint ignore=SC2016
+RUN printf 'eval "$(direnv hook bash)" || true\n' >> /etc/bash.bashrc \
+    && printf '[ "$PWD" = "/workspace" ] && eval "$(direnv export bash 2>&1)" 2>/dev/null || true\n' >> /etc/bash.bashrc
+
+WORKDIR /workspace
+
+USER node
+<% for (const instruction of hooks.userSetup) { %>
+<%= instruction %>
+<% } %>
+# === Claude CLI ===
+# hadolint ignore=DL4006
+RUN mkdir -p /home/node/.claude /home/node/.local/share/direnv/allow \
+    && printf '{"hasCompletedOnboarding":true,"bypassPermissionsModeAccepted":true}\n' > /home/node/.claude.json \
+    && curl -fsSL https://claude.ai/install.sh | bash
+ENV PATH="/home/node/.local/bin:${PATH}"
+<% if (playwright) { %>
+# === Playwright MCP pre-install ===
+RUN npx -y @playwright/mcp@latest --help 2>/dev/null || true
+<% } %>
+# === Environment ===
+ENV IS_SANDBOX=1
+<% if (playwright) { -%>
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+<% } %>
+# === Entrypoint ===
+COPY entrypoint.ts /entrypoint.ts
+ENTRYPOINT ["node", "--experimental-strip-types", "/entrypoint.ts"]
+CMD ["bash"]

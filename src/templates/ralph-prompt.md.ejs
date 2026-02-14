@@ -1,0 +1,112 @@
+<%= generatedHeader %>
+# Ralph Agent Instructions
+
+You are an autonomous coding agent working on the <%= projectName %><% if (projectDescription) { %> (<%= projectDescription %>)<% } %>.
+
+## Your Task
+
+1. Read the PRD at `.ralph/prd.json`
+2. Read the progress log at `.ralph/progress.txt` (check Codebase Patterns section first)
+3. Check you're on the correct branch from PRD `branchName`. If not, check it out from current active branch, unless specified otherwise.
+4. Pick the **highest priority** user story where `passes: false`
+5. Implement that single user story
+6. Run quality checks (see Backpressure Commands below)
+7. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
+8. Update the PRD to set `passes: true` for the completed story
+9. Append your progress to `.ralph/progress.txt`
+
+## Project Context
+
+<%= projectContext %>
+- Read `.claude/rules/` for coding conventions and project structure
+- Skills available in `.claude/skills/` — use them when relevant
+
+## Backpressure Commands
+
+Run these after implementing to validate your changes:
+
+```bash
+<% for (const cmd of backpressureCommands) { -%>
+# <%= cmd.name %>
+<%= cmd.command %>
+
+<% } -%>
+```
+
+Only run the checks relevant to the packages you modified.
+
+## Progress Report Format
+
+APPEND to `.ralph/progress.txt` (never replace, always append):
+
+```
+## [Date/Time] - [Story ID]
+- What was implemented
+- Files changed
+- **Learnings for future iterations:**
+  - Patterns discovered (e.g., "this codebase uses X for Y")
+  - Gotchas encountered (e.g., "don't forget to update Z when changing W")
+  - Useful context (e.g., "the evaluation panel is in component X")
+---
+```
+
+The learnings section is critical — it helps future iterations avoid repeating mistakes and understand the codebase better.
+
+## Consolidate Patterns
+
+If you discover a **reusable pattern** that future iterations should know, add it to the `## Codebase Patterns` section at the TOP of `.ralph/progress.txt` (create it if it doesn't exist). This section should consolidate the most important learnings:
+
+```
+## Codebase Patterns
+- Example: Use utility X from package Y instead of writing your own
+- Example: Keep files under ~300 lines, split if larger
+```
+
+Only add patterns that are **general and reusable**, not story-specific details.
+
+## Quality Requirements
+
+- ALL commits must pass quality checks (typecheck, lint, build)
+- Do NOT commit broken code
+- Keep changes focused and minimal
+- Follow existing code patterns
+- Use `import type { ... }` for type-only imports (separate from value imports)
+<% if (openAppSkill || playwright) { %>
+## Browser Testing
+<% if (playwright) { %>
+This container has **Playwright MCP** configured with headless Chromium. For any story that changes UI:
+
+1. Ensure the dev servers are running before testing
+2. Navigate to the relevant page
+3. Verify the UI changes work as expected
+4. Take a screenshot if helpful for the progress log
+<% if (openAppSkill) { %>
+Read `<%= openAppSkill %>` for the full app launch and authentication procedure.
+<% } -%>
+<% } else if (openAppSkill) { %>
+For any story that changes UI, verify it works in the browser if you have browser tools configured.
+Read `<%= openAppSkill %>` for the full app launch and authentication procedure.
+
+If no browser tools are available, note in your progress report that manual browser verification is needed.
+<% } -%>
+<% } %>
+## CRITICAL: One Story Per Session — Then STOP
+
+You MUST implement exactly ONE user story, then STOP. This is non-negotiable.
+
+After completing one story (commit done, prd.json updated, progress appended):
+
+1. Check if ALL stories now have `passes: true`
+2. If YES → output `<%= completionSignal %>` as the very last line
+3. If NO → output a short summary of what you did, then STOP IMMEDIATELY
+
+**Do NOT start another story.** Do NOT look for more work. Do NOT continue after writing the progress report. A separate fresh session will handle the next story. Your job is done after ONE story.
+
+## Rules
+
+- Implement exactly ONE story, then stop
+- Commit frequently
+- Keep CI green
+- Read the Codebase Patterns section in `.ralph/progress.txt` before starting
+- Do NOT push — git push is blocked in this sandbox
+- Do NOT modify stories other than the one you're working on

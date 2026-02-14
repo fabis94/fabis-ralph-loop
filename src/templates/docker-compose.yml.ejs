@@ -1,0 +1,46 @@
+<%= generatedHeader %>
+services:
+  ralph-container:
+    build:
+      context: ./.ralph-container
+    container_name: <%= containerName %>
+<% if (shmSize !== '64m') { -%>
+    shm_size: '<%= shmSize %>'
+<% } -%>
+    network_mode: <%= networkMode %>
+<% if (capabilities.length > 0) { -%>
+    cap_add:
+<% for (const cap of capabilities) { -%>
+      - <%= cap %>
+<% } -%>
+<% } -%>
+    volumes:
+      - .:/workspace:cached
+<% for (const sv of shadowVolumes) { -%>
+      - <%= sv %>
+<% } -%>
+<% for (const [name, path] of Object.entries(persistVolumes)) { -%>
+      - <%= name %>:<%= path %>
+<% } -%>
+      - ${HOME}/.claude/plans:/home/node/host-plans:ro
+<% for (const v of extraVolumes) { -%>
+      - <%= v %>
+<% } -%>
+    environment:
+      - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:?Set CLAUDE_CODE_OAUTH_TOKEN on host before starting}
+      - RALPH_AGENT=<%= agent %>
+<% if (shadowVolumesEnv) { -%>
+      - RALPH_SHADOW_VOLUMES=<%= shadowVolumesEnv %>
+<% } -%>
+<% for (const [key, value] of Object.entries(env)) { -%>
+      - <%= key %>=<%= value %>
+<% } -%>
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+<% if (Object.keys(persistVolumes).length > 0) { %>
+volumes:
+<% for (const name of Object.keys(persistVolumes)) { -%>
+  <%= name %>:
+<% } -%>
+<% } -%>
