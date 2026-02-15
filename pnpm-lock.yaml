@@ -23,6 +23,9 @@ importers:
       execa:
         specifier: ^9.5.2
         version: 9.6.1
+      universal-ai-config:
+        specifier: ^1.7.0
+        version: 1.7.0(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1)
       zod:
         specifier: ^3.24.2
         version: 3.25.76
@@ -66,9 +69,6 @@ importers:
       typescript-eslint:
         specifier: ^8.55.0
         version: 8.55.0(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)
-      universal-ai-config:
-        specifier: ^1.6.0
-        version: 1.6.0(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1)
       vitest:
         specifier: ^3.0.5
         version: 3.2.4(@types/node@22.19.11)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
@@ -1687,8 +1687,8 @@ packages:
     resolution: {integrity: sha512-+QBBXBCvifc56fsbuxZQ6Sic3wqqc3WWaqxs58gvJrcOuN83HGTCwz3oS5phzU9LthRNE9VrJCFCLUgHeeFnfA==}
     engines: {node: '>=18'}
 
-  universal-ai-config@1.6.0:
-    resolution: {integrity: sha512-apAmYvOHcG/WZSZ+8L7kBAS1IWZjKHc6UOR6Ju+0Qy1pzSOY56PyFwUBzEGwfE4Hdc9X3tN7nVFUxid9wY4++A==}
+  universal-ai-config@1.7.0:
+    resolution: {integrity: sha512-GllcTw0EphB1qsQjG/GNgaVKr/4iLl7KGcEEpfZTHGmW2PyQpu4I5db3EvgnQ2QDgGcwV82f+0S3q+luhNlyUA==}
     hasBin: true
 
   unrun@0.2.27:
@@ -3289,7 +3289,7 @@ snapshots:
 
   unicorn-magic@0.3.0: {}
 
-  universal-ai-config@1.6.0(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1):
+  universal-ai-config@1.7.0(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1):
     dependencies:
       c12: 4.0.0-beta.2(chokidar@5.0.0)(dotenv@17.3.1)(giget@2.0.0)(jiti@2.6.1)
       citty: 0.2.1
