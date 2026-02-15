@@ -70,8 +70,9 @@ RUN echo '<%= user %> ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 RUN printf 'eval "$(direnv hook bash)" || true\n' >> /etc/bash.bashrc \
     && printf '[ "$PWD" = "/workspace" ] && eval "$(direnv export bash 2>&1)" 2>/dev/null || true\n' >> /etc/bash.bashrc
 
-# Generate Ralph loop runner that pins the same CLI version as the host
-RUN printf '#!/bin/bash\nexec npx --yes fabis-ralph-loop@<%= packageVersion %> run "$@"\n' \
+# Pre-install Ralph loop CLI so it's available immediately (no npx download on first run)
+RUN npm install -g fabis-ralph-loop@<%= packageVersion %>
+RUN printf '#!/bin/bash\nexec fabis-ralph-loop run "$@"\n' \
     > /usr/local/bin/run-fabis-ralph-loop && chmod +x /usr/local/bin/run-fabis-ralph-loop
 
 WORKDIR /workspace

@@ -117,8 +117,8 @@ describe('generateDockerfile', () => {
     const config = makeConfig()
     const result = await generateDockerfile(config)
 
+    expect(result).toContain('npm install -g fabis-ralph-loop@')
     expect(result).toContain('run-fabis-ralph-loop')
-    expect(result).toContain('npx --yes fabis-ralph-loop@')
     expect(result).toContain('/usr/local/bin/run-fabis-ralph-loop')
   })
 
