@@ -27,6 +27,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "unused:check": "knip",
     "check": "eslint . && prettier --check . && tsc --noEmit && knip",
     "prepare": "husky",
     "frl": "pnpm dev"
