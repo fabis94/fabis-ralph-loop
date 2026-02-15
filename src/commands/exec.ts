@@ -17,10 +17,8 @@ export default defineCommand({
   async run({ args }) {
     const config = await loadRalphConfig()
     // args._ contains the rest of the arguments after the command
-    const command = [
-      args.command as string,
-      ...(((args as Record<string, unknown>)._ as string[]) || []),
-    ]
+    const rest = (args as Record<string, unknown>)._
+    const command = [String(args.command), ...(Array.isArray(rest) ? rest.map(String) : [])]
     await execInContainer(config.container.name, command)
   },
 })
