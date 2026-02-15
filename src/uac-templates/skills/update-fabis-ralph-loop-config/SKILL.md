@@ -272,6 +272,27 @@ container: {
 
 ---
 
+## Workflow: Running the Ralph Loop
+
+The Ralph loop runs **inside the container**, not via `docker exec` from the host:
+
+```bash
+# On host:
+fabis-ralph-loop generate        # generates Dockerfile with wrapper script
+fabis-ralph-loop start           # builds, starts, auto-attaches to container shell
+
+# Now inside container:
+run-fabis-ralph-loop 20 --model opus --verbose   # runs the loop
+# Ctrl+C stops the loop cleanly
+# Ctrl+D / exit to leave container shell
+```
+
+- `fabis-ralph-loop start` auto-attaches to the container shell by default. Use `--no-attach` to skip.
+- `run-fabis-ralph-loop` is a wrapper script baked into the Dockerfile that invokes `npx fabis-ralph-loop run` at the same version as the host CLI.
+- Ctrl+C works naturally because the process runs directly inside the container's PID namespace.
+
+---
+
 ## Checklist
 
 Before saving config changes:

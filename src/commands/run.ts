@@ -21,11 +21,6 @@ export default defineCommand({
       type: 'boolean',
       description: 'Enable verbose stream-json progress output',
     },
-    'no-container': {
-      type: 'boolean',
-      description: 'Run agent directly on host without container',
-      default: false,
-    },
   },
   async run({ args }) {
     const config = await loadRalphConfig()
@@ -39,7 +34,6 @@ export default defineCommand({
       iterations,
       model: args.model,
       verbose: args.verbose,
-      noContainer: args['no-container'],
     })
   },
 })

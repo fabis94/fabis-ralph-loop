@@ -1,4 +1,5 @@
 import { renderTemplate, GENERATED_HEADER } from '../utils/template.js'
+import { getPackageVersion } from '../utils/version.js'
 import type { ResolvedConfig } from '../config/schema.js'
 
 /**
@@ -20,5 +21,6 @@ export async function generateDockerfile(config: ResolvedConfig): Promise<string
     user,
     createUser: user === 'sandbox',
     homeDir: `/home/${user}`,
+    packageVersion: getPackageVersion(),
   })
 }

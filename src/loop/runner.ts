@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { consola } from 'consola'
 import { execAgent } from '../container/exec.js'
-import { parseStreamOutput } from './progress.js'
+import { StreamProgressParser } from './progress.js'
 import { archiveIfBranchChanged, ensureProgressFile } from './archive.js'
 import type { ResolvedConfig } from '../config/schema.js'
 
@@ -9,7 +9,6 @@ interface RunOptions {
   iterations: number
   model?: string
   verbose?: boolean
-  noContainer?: boolean
 }
 
 function buildAgentArgs(agent: string, options: { model: string; verbose: boolean }): string[] {
@@ -24,8 +23,22 @@ function buildAgentArgs(agent: string, options: { model: string; verbose: boolea
   return []
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
+function sleep(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    if (signal?.aborted) {
+      resolve()
+      return
+    }
+    const timer = setTimeout(resolve, ms)
+    signal?.addEventListener(
+      'abort',
+      () => {
+        clearTimeout(timer)
+        resolve()
+      },
+      { once: true },
+    )
+  })
 }
 
 export async function runLoop(config: ResolvedConfig, options: RunOptions): Promise<void> {
@@ -35,41 +48,112 @@ export async function runLoop(config: ResolvedConfig, options: RunOptions): Prom
 
   await ensureProgressFile()
 
-  for (let i = 1; i <= options.iterations; i++) {
-    consola.box(`Ralph Iteration ${i} of ${options.iterations} (${config.defaults.agent})`)
+  const abortController = new AbortController()
+  const { signal } = abortController
 
-    await archiveIfBranchChanged()
+  // First Ctrl+C: graceful cleanup (abort agent + container process).
+  // Second Ctrl+C: force exit (process.once removes the handler after first call,
+  // so the default Node.js SIGINT behavior kicks in).
+  const handleSignal = () => {
+    consola.warn('\nInterrupted. Cleaning up...')
+    abortController.abort()
+  }
+  process.once('SIGINT', handleSignal)
+  process.once('SIGTERM', handleSignal)
 
-    const promptContent = await readFile('.ralph-container/ralph-prompt.md', 'utf8')
-    const agentArgs = buildAgentArgs(config.defaults.agent, { model, verbose })
+  consola.info(
+    [
+      `Starting Ralph`,
+      `Agent: ${config.defaults.agent}`,
+      `Model: ${model}`,
+      `Verbose: ${verbose}`,
+      `Iterations: ${options.iterations}`,
+    ].join(' | '),
+  )
 
-    const rawOutput = await execAgent({
-      containerName: options.noContainer ? undefined : config.container.name,
-      command: config.defaults.agent,
-      args: agentArgs,
-      input: promptContent,
-    })
+  try {
+    for (let i = 1; i <= options.iterations; i++) {
+      if (signal.aborted) break
 
-    let finalOutput: string
-    if (verbose) {
-      const result = parseStreamOutput(rawOutput, i)
-      finalOutput = result.output
-    } else {
-      // In non-verbose mode, pipe to stderr for visibility
-      process.stderr.write(rawOutput)
-      finalOutput = rawOutput
+      consola.box(`Ralph Iteration ${i} of ${options.iterations} (${config.defaults.agent})`)
+
+      await archiveIfBranchChanged()
+
+      const promptContent = await readFile('.ralph-container/ralph-prompt.md', 'utf8')
+      const agentArgs = buildAgentArgs(config.defaults.agent, { model, verbose })
+
+      let finalOutput: string
+      let turnsUsed = '?'
+
+      try {
+        if (verbose) {
+          // Verbose: parse stream-json lines in real-time, show progress on stderr
+          const parser = new StreamProgressParser(i)
+          const result = await execAgent({
+            command: config.defaults.agent,
+            args: agentArgs,
+            input: promptContent,
+            onData: (chunk) => parser.processChunk(chunk),
+            onStderr: (chunk) => process.stderr.write(chunk),
+            signal,
+          })
+
+          if (result.aborted) break
+
+          parser.flush()
+          const progress = parser.getResult()
+          finalOutput = progress.output
+          turnsUsed = String(progress.turns)
+
+          if (result.exitCode !== 0) {
+            consola.warn(`Agent exited with code ${result.exitCode}`)
+          }
+        } else {
+          // Non-verbose: stream both stdout and stderr to stderr in real-time
+          const result = await execAgent({
+            command: config.defaults.agent,
+            args: agentArgs,
+            input: promptContent,
+            onData: (chunk) => process.stderr.write(chunk),
+            onStderr: (chunk) => process.stderr.write(chunk),
+            signal,
+          })
+
+          if (result.aborted) break
+
+          finalOutput = result.stdout
+        }
+      } catch (error) {
+        consola.error(`Agent execution failed: ${error instanceof Error ? error.message : error}`)
+        finalOutput = ''
+      }
+
+      if (finalOutput.includes(completionSignal)) {
+        consola.success(
+          `All stories complete! Completed at iteration ${i} of ${options.iterations}`,
+        )
+        return
+      }
+
+      if (i < options.iterations) {
+        consola.info(
+          `Iteration ${i} complete (${turnsUsed} turns). Sleeping ${sleepBetweenMs}ms...`,
+        )
+        await sleep(sleepBetweenMs, signal)
+      }
     }
 
-    if (finalOutput.includes(completionSignal)) {
-      consola.success('All stories complete!')
+    if (signal.aborted) {
+      consola.info('Stopped.')
+      process.exitCode = 130
       return
     }
 
-    if (i < options.iterations) {
-      consola.info(`Iteration ${i} complete. Sleeping ${sleepBetweenMs}ms...`)
-      await sleep(sleepBetweenMs)
-    }
+    consola.warn(`Reached max iterations (${options.iterations}) without completing all tasks.`)
+    consola.warn('Check .ralph/progress.txt for status.')
+    process.exitCode = 1
+  } finally {
+    process.removeListener('SIGINT', handleSignal)
+    process.removeListener('SIGTERM', handleSignal)
   }
-
-  consola.warn(`Reached max iterations (${options.iterations}) without completing all tasks.`)
 }

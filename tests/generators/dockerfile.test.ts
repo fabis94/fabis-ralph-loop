@@ -123,6 +123,15 @@ describe('generateDockerfile', () => {
     expect(result).toContain('fabis-ralph-loop.config.ts')
   })
 
+  it('includes run-fabis-ralph-loop wrapper script', async () => {
+    const config = makeConfig()
+    const result = await generateDockerfile(config)
+
+    expect(result).toContain('run-fabis-ralph-loop')
+    expect(result).toContain('npx --yes fabis-ralph-loop@')
+    expect(result).toContain('/usr/local/bin/run-fabis-ralph-loop')
+  })
+
   it('includes generated header', async () => {
     const config = makeConfig()
     const result = await generateDockerfile(config)

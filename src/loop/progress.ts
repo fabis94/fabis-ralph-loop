@@ -21,33 +21,60 @@ interface ProgressResult {
 }
 
 /**
- * Parse Claude stream-json output into human-readable progress.
- * Returns the final result text and metadata.
+ * Streaming progress parser for Claude stream-json output.
+ * Processes lines incrementally as they arrive, logging progress to stderr.
  */
-export function parseStreamOutput(rawOutput: string, iteration: number): ProgressResult {
-  let turns = 0
-  let cost: number | null = null
-  let resultText = ''
+export class StreamProgressParser {
+  private turns = 0
+  private cost: number | null = null
+  private resultText = ''
+  private buffer = ''
 
-  const lines = rawOutput.split('\n').filter((line) => line.trim())
+  constructor(private iteration: number) {}
 
-  for (const line of lines) {
+  /**
+   * Feed a raw chunk of data. Internally buffers and processes complete lines.
+   */
+  processChunk(chunk: Buffer | string): void {
+    this.buffer += chunk.toString()
+    const lines = this.buffer.split('\n')
+    this.buffer = lines.pop() ?? '' // keep incomplete line in buffer
+
+    for (const line of lines) {
+      if (line.trim()) this.processLine(line)
+    }
+  }
+
+  /**
+   * Flush any remaining buffered data. Call after the process exits.
+   */
+  flush(): void {
+    if (this.buffer.trim()) {
+      this.processLine(this.buffer)
+      this.buffer = ''
+    }
+  }
+
+  getResult(): ProgressResult {
+    return { output: this.resultText, turns: this.turns, cost: this.cost }
+  }
+
+  private processLine(line: string): void {
     let message: StreamMessage
     try {
       message = JSON.parse(line) as StreamMessage
     } catch {
-      continue
+      return
     }
 
     switch (message.type) {
       case 'system':
       case 'user':
-        // Skip system init and user tool results
         break
 
       case 'assistant': {
-        turns++
-        consola.info(`--- Iteration ${iteration} | Turn ${turns} ---`)
+        this.turns++
+        consola.info(`--- Iteration ${this.iteration} | Turn ${this.turns} ---`)
 
         if (message.message?.content) {
           const toolDetails = message.message.content
@@ -83,10 +110,10 @@ export function parseStreamOutput(rawOutput: string, iteration: number): Progres
       }
 
       case 'result': {
-        resultText = message.result || ''
-        cost = message.total_cost_usd ?? null
+        this.resultText = message.result || ''
+        this.cost = message.total_cost_usd ?? null
         consola.info('---')
-        consola.info(`Completed in ${turns} turns | Cost: $${cost ?? '?'}`)
+        consola.info(`Completed in ${this.turns} turns | Cost: $${this.cost ?? '?'}`)
         break
       }
 
@@ -98,6 +125,15 @@ export function parseStreamOutput(rawOutput: string, iteration: number): Progres
       }
     }
   }
+}
 
-  return { output: resultText, turns, cost }
+/**
+ * Parse Claude stream-json output into human-readable progress.
+ * Returns the final result text and metadata.
+ */
+export function parseStreamOutput(rawOutput: string, iteration: number): ProgressResult {
+  const parser = new StreamProgressParser(iteration)
+  parser.processChunk(rawOutput)
+  parser.flush()
+  return parser.getResult()
 }
