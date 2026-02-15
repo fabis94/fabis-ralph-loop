@@ -1,10 +1,22 @@
 import { readFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import ejs from 'ejs'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const TEMPLATES_DIR = join(__dirname, '..', 'templates')
+/**
+ * Resolve a bundled asset directory (templates, static, uac-templates).
+ * In dist (flat layout): assets are siblings of the compiled files.
+ * In src (nested layout via tsx): assets are siblings of the parent dir.
+ */
+export function resolveAssetDir(assetName: string, metaUrl: string): string {
+  const dir = dirname(fileURLToPath(metaUrl))
+  const sibling = join(dir, assetName)
+  if (existsSync(sibling)) return sibling
+  return join(dir, '..', assetName)
+}
+
+const TEMPLATES_DIR = resolveAssetDir('templates', import.meta.url)
 
 export async function renderTemplate(
   templateName: string,

@@ -3,7 +3,7 @@ import { consola } from 'consola'
 import { isContainerRunning } from '../utils/docker.js'
 import type { ResolvedConfig } from '../config/schema.js'
 
-const COMPOSE_FILE = 'docker-compose.ralph.yml'
+const COMPOSE_FILE = '.ralph-container/docker-compose.yml'
 const READY_TIMEOUT_MS = 5 * 60 * 1000 // 5 minutes
 const POLL_INTERVAL_MS = 1000
 

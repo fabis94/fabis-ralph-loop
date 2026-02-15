@@ -26,11 +26,9 @@ export default defineConfig({
     name: 'My Project',
     description: '',
     context: '- **Monorepo** managed with npm\\n- **TypeScript strict mode** everywhere',
-    backpressureCommands: [
-      { name: 'Build', command: 'npm run build' },
-      { name: 'Lint', command: 'npm run lint' },
-      { name: 'Typecheck', command: 'tsc --noEmit' },
-    ],
+  },
+  output: {
+    mode: 'direct',
   },
 })
 `
@@ -41,7 +39,7 @@ export default defineCommand({
     description: 'Scaffold ralph-loop config and generate all files',
   },
   async run() {
-    const configPath = 'ralph-loop.config.ts'
+    const configPath = 'fabis-ralph-loop.config.ts'
 
     if (existsSync(configPath)) {
       consola.warn(`${configPath} already exists. Regenerating files from existing config.`)
@@ -55,7 +53,7 @@ export default defineCommand({
     await generateAll(config, process.cwd())
 
     consola.success(
-      'Init complete. Edit ralph-loop.config.ts and run `fabis-ralph-loop generate` to regenerate.',
+      'Init complete. Edit fabis-ralph-loop.config.ts and run `fabis-ralph-loop generate` to regenerate.',
     )
   },
 })

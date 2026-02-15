@@ -56,6 +56,14 @@ describe('generatePrompt', () => {
     expect(result).toContain('pnpm lint')
   })
 
+  it('shows discovery fallback when no backpressure commands', async () => {
+    const config = makeConfig()
+    const result = await generatePrompt(config)
+
+    expect(result).toContain('Discover and run')
+    expect(result).not.toContain('```bash')
+  })
+
   it('includes completion signal', async () => {
     const config = makeConfig()
     const result = await generatePrompt(config)

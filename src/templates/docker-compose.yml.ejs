@@ -2,7 +2,7 @@
 services:
   ralph-container:
     build:
-      context: ./.ralph-container
+      context: .
     container_name: <%= containerName %>
 <% if (shmSize !== '64m') { -%>
     shm_size: '<%= shmSize %>'
@@ -15,7 +15,7 @@ services:
 <% } -%>
 <% } -%>
     volumes:
-      - .:/workspace:cached
+      - ..:/workspace:cached
 <% for (const sv of shadowVolumes) { -%>
       - <%= sv %>
 <% } -%>

@@ -140,9 +140,13 @@ The PRD reader may be a junior developer or AI agent. Therefore:
 
 When writing acceptance criteria that include quality checks, use project-specific commands:
 
+<% if (typeof backpressureCommands !== 'undefined' && backpressureCommands.length > 0) { -%>
 <% for (const cmd of backpressureCommands) { -%>
 
 - <%= cmd.name %>: `<%= cmd.command %>`
+  <% } -%>
+  <% } else { -%>
+  No backpressure commands configured. Check `fabis-ralph-loop.config.ts` to add quality checks.
   <% } -%>
 
 ---

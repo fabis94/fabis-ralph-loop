@@ -1,9 +1,8 @@
 import { readFile } from 'node:fs/promises'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
+import { resolveAssetDir } from '../utils/template.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const STATIC_DIR = join(__dirname, '..', 'static')
+const STATIC_DIR = resolveAssetDir('static', import.meta.url)
 
 export async function generateEntrypoint(): Promise<string> {
   return readFile(join(STATIC_DIR, 'entrypoint.ts'), 'utf8')

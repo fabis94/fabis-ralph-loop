@@ -19,7 +19,7 @@ describe('generateCompose', () => {
 
     expect(result).toContain('container_name: ralph-container')
     expect(result).toContain('network_mode: host')
-    expect(result).toContain('.:/workspace:cached')
+    expect(result).toContain('..:/workspace:cached')
     expect(result).toContain('CLAUDE_CODE_OAUTH_TOKEN')
     expect(result).toContain('RALPH_AGENT=claude')
     expect(result).toContain('stdin_open: true')

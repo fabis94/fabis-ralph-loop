@@ -40,7 +40,7 @@ export async function runLoop(config: ResolvedConfig, options: RunOptions): Prom
 
     await archiveIfBranchChanged()
 
-    const promptContent = await readFile('ralph-prompt.md', 'utf8')
+    const promptContent = await readFile('.ralph-container/ralph-prompt.md', 'utf8')
     const agentArgs = buildAgentArgs(config.defaults.agent, { model, verbose })
 
     const rawOutput = await execAgent({

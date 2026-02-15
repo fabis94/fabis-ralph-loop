@@ -1,12 +1,11 @@
 import { readFile, writeFile, cp, mkdir } from 'node:fs/promises'
-import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import ejs from 'ejs'
 import { consola } from 'consola'
 import type { ResolvedConfig } from '../config/schema.js'
+import { resolveAssetDir } from '../utils/template.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const UAC_TEMPLATES_DIR = join(__dirname, '..', 'uac-templates')
+const UAC_TEMPLATES_DIR = resolveAssetDir('uac-templates', import.meta.url)
 
 export async function generateSkills(config: ResolvedConfig, projectRoot: string): Promise<void> {
   if (config.output.mode === 'direct') {

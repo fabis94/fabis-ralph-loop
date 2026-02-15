@@ -36,12 +36,12 @@ export async function generateAll(
     files.push({ path: join('.ralph-container', 'entrypoint.ts'), content: entrypoint })
 
     const compose = await generateCompose(config)
-    files.push({ path: 'docker-compose.ralph.yml', content: compose })
+    files.push({ path: join('.ralph-container', 'docker-compose.yml'), content: compose })
   }
 
   if (!options.only || options.only === 'prompt') {
     const prompt = await generatePrompt(config)
-    files.push({ path: 'ralph-prompt.md', content: prompt })
+    files.push({ path: join('.ralph-container', 'ralph-prompt.md'), content: prompt })
   }
 
   if (options.dryRun) {

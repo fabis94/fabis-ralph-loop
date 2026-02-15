@@ -24,7 +24,7 @@ You are an autonomous coding agent working on the <%= projectName %><% if (proje
 ## Backpressure Commands
 
 Run these after implementing to validate your changes:
-
+<% if (backpressureCommands.length > 0) { %>
 ```bash
 <% for (const cmd of backpressureCommands) { -%>
 # <%= cmd.name %>
@@ -34,6 +34,9 @@ Run these after implementing to validate your changes:
 ```
 
 Only run the checks relevant to the packages you modified.
+<% } else { %>
+Discover and run the repository's linting, testing, typechecking, and build commands (e.g. from `package.json` scripts, `Makefile`, CI config). Run whichever checks are relevant to the packages you modified.
+<% } -%>
 
 ## Progress Report Format
 
