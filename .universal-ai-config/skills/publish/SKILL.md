@@ -36,7 +36,16 @@ If **neither** is available, stop and tell the user:
 >
 > Create a token at: https://www.npmjs.com/settings/~/tokens
 
-### 1b. Clean working directory
+### 1b. Package metadata
+
+Read `package.json` and verify these fields are present and non-empty:
+
+- `repository` — must be set (string or object with `url`). Required for npm package linking.
+- `files` — must be a non-empty array. Required to control what gets published to npm.
+
+If either is missing, **stop** and tell the user which fields need to be added.
+
+### 1c. Clean working directory
 
 - Run `git status` — working directory must be clean (no uncommitted changes)
 - If there are uncommitted changes, stop and ask the user whether to continue anyway or commit first

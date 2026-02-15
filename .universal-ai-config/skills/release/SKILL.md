@@ -27,7 +27,16 @@ Run ALL checks upfront before doing any release work. If any check fails, **stop
 - Verify the current branch is the main/default branch (`git symbolic-ref refs/remotes/origin/HEAD` or check for `main`/`master`)
 - Run `git pull` to ensure the branch is up to date
 
-### 1b. GitHub authentication
+### 1b. Package metadata
+
+If `package.json` exists, verify these fields are present and non-empty:
+
+- `repository` — must be set (string or object with `url`). Required for linking the release to the correct repo.
+- `files` — must be a non-empty array. Ensures the published package includes the right files.
+
+If either is missing, **stop** and tell the user which fields need to be added.
+
+### 1c. GitHub authentication
 
 Check in order:
 
@@ -43,7 +52,7 @@ If **neither** is available, stop and tell the user:
 >
 > Create a token at: https://github.com/settings/tokens/new?scopes=repo
 
-### 1c. Git remote
+### 1d. Git remote
 
 - Run `git remote get-url origin` — must have a remote configured
 
