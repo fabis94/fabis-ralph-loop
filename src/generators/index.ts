@@ -48,23 +48,20 @@ export async function generateAll(
     for (const file of files) {
       consola.info(`[dry-run] Would write: ${file.path}`)
     }
-    return files
+  } else {
+    for (const file of files) {
+      const fullPath = join(projectRoot, file.path)
+      await mkdir(join(fullPath, '..'), { recursive: true })
+      await writeFile(fullPath, file.content, 'utf8')
+      consola.success(`Written: ${file.path}`)
+    }
   }
 
-  // Write files
-  for (const file of files) {
-    const fullPath = join(projectRoot, file.path)
-    await mkdir(join(fullPath, '..'), { recursive: true })
-    await writeFile(fullPath, file.content, 'utf8')
-    consola.success(`Written: ${file.path}`)
-  }
-
-  // Skills are handled separately (UAC integration)
   if (!options.only || options.only === 'skills') {
-    if (!options.dryRun) {
-      await generateSkills(config, projectRoot)
-    } else {
+    if (options.dryRun) {
       consola.info('[dry-run] Would generate skills')
+    } else {
+      await generateSkills(config, projectRoot)
     }
   }
 
