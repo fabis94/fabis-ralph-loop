@@ -5,17 +5,17 @@ import { startContainer } from '../container/lifecycle.js'
 export default defineCommand({
   meta: {
     name: 'start',
-    description: 'Build & start container, attach bash',
+    description: 'Build & start container',
   },
   args: {
-    'no-attach': {
+    attach: {
       type: 'boolean',
-      description: 'Start without attaching',
+      description: 'Attach a bash shell after starting',
       default: false,
     },
   },
   async run({ args }) {
     const config = await loadRalphConfig()
-    await startContainer(config, { noAttach: args['no-attach'] })
+    await startContainer(config, { attach: args.attach })
   },
 })

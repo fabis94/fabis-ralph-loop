@@ -1,3 +1,3 @@
 export default {
-  ignore: ['src/static/**'],
+  ignoreDependencies: ['universal-ai-config'],
 }

@@ -9,6 +9,7 @@ function isNodeBaseImage(baseImage: string): boolean {
 }
 
 export async function generateDockerfile(config: ResolvedConfig): Promise<string> {
+  const user = config.container.user
   return renderTemplate('Dockerfile.ejs', {
     generatedHeader: GENERATED_HEADER,
     baseImage: config.container.baseImage,
@@ -16,5 +17,8 @@ export async function generateDockerfile(config: ResolvedConfig): Promise<string
     installNode: !isNodeBaseImage(config.container.baseImage),
     playwright: config.container.playwright,
     hooks: config.container.hooks,
+    user,
+    createUser: user === 'sandbox',
+    homeDir: `/home/${user}`,
   })
 }

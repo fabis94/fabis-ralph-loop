@@ -88,20 +88,21 @@ backpressureCommands: [
 
 Docker container configuration. Controls the environment Ralph runs in.
 
-| Key              | Type                     | Default                                           | Purpose                                                                                           |
-| ---------------- | ------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `name`           | `string`                 | `'ralph-container'`                               | Docker container name. Change if running multiple Ralph instances                                 |
-| `baseImage`      | `string`                 | `'node:22-bookworm'`                              | Base Docker image. Use a different Node version or distro if needed                               |
-| `systemPackages` | `string[]`               | `[]`                                              | APT packages to install (e.g., `['postgresql-client', 'redis-tools']`)                            |
-| `playwright`     | `boolean`                | `false`                                           | Enable Playwright browser testing. Auto-adds `SYS_ADMIN` capability and sets `shmSize` to `'2gb'` |
-| `networkMode`    | `string`                 | `'host'`                                          | Docker network mode. Use `'bridge'` if host networking causes conflicts                           |
-| `env`            | `Record<string, string>` | `{}`                                              | Environment variables injected into the container                                                 |
-| `shmSize`        | `string`                 | `'64m'`                                           | Shared memory size. Auto-upgraded to `'2gb'` when `playwright: true`                              |
-| `capabilities`   | `string[]`               | `[]`                                              | Docker capabilities (e.g., `['SYS_ADMIN']`). Auto-added when `playwright: true`                   |
-| `volumes`        | `string[]`               | `[]`                                              | Additional Docker volume mounts (standard Docker `-v` syntax)                                     |
-| `shadowVolumes`  | `string[]`               | `[]`                                              | Paths to exclude from the project mount using anonymous volumes (see below)                       |
-| `persistVolumes` | `Record<string, string>` | `{ 'ralph-claude-config': '/home/node/.claude' }` | Named volumes that persist across container restarts. Key = volume name, value = container path   |
-| `hooks`          | `ContainerHooks`         | `{}`                                              | Dockerfile build hooks (see below)                                                                |
+| Key              | Type                     | Default                                              | Purpose                                                                                                |
+| ---------------- | ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `name`           | `string`                 | `'ralph-container'`                                  | Docker container name. Change if running multiple Ralph instances                                      |
+| `baseImage`      | `string`                 | `'node:22-bookworm'`                                 | Base Docker image. Use a different Node version or distro if needed                                    |
+| `user`           | `string`                 | `'sandbox'`                                          | Container user. Default creates `sandbox` (UID 1000). Set to existing user (e.g. `'node'`) to reuse it |
+| `systemPackages` | `string[]`               | `[]`                                                 | APT packages to install (e.g., `['postgresql-client', 'redis-tools']`)                                 |
+| `playwright`     | `boolean`                | `false`                                              | Enable Playwright browser testing. Auto-adds `SYS_ADMIN` capability and sets `shmSize` to `'2gb'`      |
+| `networkMode`    | `string`                 | `'host'`                                             | Docker network mode. Use `'bridge'` if host networking causes conflicts                                |
+| `env`            | `Record<string, string>` | `{}`                                                 | Environment variables injected into the container                                                      |
+| `shmSize`        | `string`                 | `'64m'`                                              | Shared memory size. Auto-upgraded to `'2gb'` when `playwright: true`                                   |
+| `capabilities`   | `string[]`               | `[]`                                                 | Docker capabilities (e.g., `['SYS_ADMIN']`). Auto-added when `playwright: true`                        |
+| `volumes`        | `string[]`               | `[]`                                                 | Additional Docker volume mounts (standard Docker `-v` syntax)                                          |
+| `shadowVolumes`  | `string[]`               | `[]`                                                 | Paths to exclude from the project mount using anonymous volumes (see below)                            |
+| `persistVolumes` | `Record<string, string>` | `{ 'ralph-claude-config': '/home/sandbox/.claude' }` | Named volumes that persist across container restarts. Key = volume name, value = container path        |
+| `hooks`          | `ContainerHooks`         | `{}`                                                 | Dockerfile build hooks (see below)                                                                     |
 
 #### Shadow Volumes
 
@@ -136,7 +137,8 @@ container: {
 Insert custom Dockerfile instructions. Each string is written verbatim into the Dockerfile — you must include the `RUN` (or other Dockerfile instruction) prefix yourself.
 
 - `rootSetup` — `string[]` of Dockerfile instructions executed as **root** (after system packages, before user switch)
-- `userSetup` — `string[]` of Dockerfile instructions executed as the **node** user (after workdir setup)
+- `userSetup` — `string[]` of Dockerfile instructions executed as the **sandbox** user (after workdir setup)
+- `entrypointSetup` — `string[]` of shell commands executed at **container startup** (after volumes mount and direnv, before ready signal). Use for commands that depend on mounted volumes (e.g., `pnpm install`, database migrations). These are raw shell commands — no `RUN` prefix.
 
 ```typescript
 container: {
@@ -147,6 +149,10 @@ container: {
     userSetup: [
       'RUN corepack enable',
       'RUN corepack prepare pnpm@latest --activate',
+    ],
+    entrypointSetup: [
+      'pnpm install --frozen-lockfile',
+      'pnpm db:migrate',
     ],
   },
 }
@@ -258,8 +264,8 @@ container: {
 ```typescript
 container: {
   persistVolumes: {
-    'ralph-claude-config': '/home/node/.claude',
-    'ralph-turbo-cache': '/home/node/.cache/turbo',
+    'ralph-claude-config': '/home/sandbox/.claude',
+    'ralph-turbo-cache': '/home/sandbox/.cache/turbo',
   },
 }
 ```

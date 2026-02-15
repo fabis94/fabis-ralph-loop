@@ -9,7 +9,7 @@ const POLL_INTERVAL_MS = 1000
 
 export async function startContainer(
   config: ResolvedConfig,
-  options: { noAttach?: boolean } = {},
+  options: { attach?: boolean } = {},
 ): Promise<void> {
   // Validate token
   if (!process.env.CLAUDE_CODE_OAUTH_TOKEN) {
@@ -39,7 +39,7 @@ export async function startContainer(
     consola.info('Ralph container already running.')
   }
 
-  if (!options.noAttach) {
+  if (options.attach) {
     consola.info('Attaching to container...')
     const result = await execa('docker', ['exec', '-it', config.container.name, 'bash'], {
       stdio: 'inherit',

@@ -21,7 +21,7 @@ describe('generateCompose', () => {
     expect(result).toContain('network_mode: host')
     expect(result).toContain('..:/workspace:cached')
     expect(result).toContain('CLAUDE_CODE_OAUTH_TOKEN')
-    expect(result).toContain('RALPH_AGENT=claude')
+    expect(result).not.toContain('RALPH_AGENT')
     expect(result).toContain('stdin_open: true')
     expect(result).toContain('tty: true')
   })
@@ -63,16 +63,14 @@ describe('generateCompose', () => {
 
     expect(result).toContain('- /workspace/node_modules')
     expect(result).toContain('- /workspace/packages/app/node_modules')
-    expect(result).toContain(
-      'RALPH_SHADOW_VOLUMES=/workspace/node_modules,/workspace/packages/app/node_modules',
-    )
+    expect(result).not.toContain('RALPH_SHADOW_VOLUMES')
   })
 
   it('includes persist volumes', async () => {
     const config = makeConfig()
     const result = await generateCompose(config)
 
-    expect(result).toContain('ralph-claude-config:/home/node/.claude')
+    expect(result).toContain('ralph-claude-config:/home/sandbox/.claude')
     expect(result).toContain('volumes:')
     expect(result).toContain('ralph-claude-config:')
   })
@@ -99,6 +97,16 @@ describe('generateCompose', () => {
     const config = makeConfig()
     const result = await generateCompose(config)
 
+    expect(result).toContain('/home/sandbox/host-plans:ro')
+  })
+
+  it('resolves paths for custom user', async () => {
+    const config = makeConfig({
+      container: { name: 'test', user: 'node' },
+    })
+    const result = await generateCompose(config)
+
     expect(result).toContain('/home/node/host-plans:ro')
+    expect(result).toContain('ralph-claude-config:/home/node/.claude')
   })
 })

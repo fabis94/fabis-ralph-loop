@@ -22,16 +22,12 @@ services:
 <% for (const [name, path] of Object.entries(persistVolumes)) { -%>
       - <%= name %>:<%= path %>
 <% } -%>
-      - ${HOME}/.claude/plans:/home/node/host-plans:ro
+      - ${HOME}/.claude/plans:<%= homeDir %>/host-plans:ro
 <% for (const v of extraVolumes) { -%>
       - <%= v %>
 <% } -%>
     environment:
       - CLAUDE_CODE_OAUTH_TOKEN=${CLAUDE_CODE_OAUTH_TOKEN:?Set CLAUDE_CODE_OAUTH_TOKEN on host before starting}
-      - RALPH_AGENT=<%= agent %>
-<% if (shadowVolumesEnv) { -%>
-      - RALPH_SHADOW_VOLUMES=<%= shadowVolumesEnv %>
-<% } -%>
 <% for (const [key, value] of Object.entries(env)) { -%>
       - <%= key %>=<%= value %>
 <% } -%>

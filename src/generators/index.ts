@@ -32,7 +32,7 @@ export async function generateAll(
     const dockerfile = await generateDockerfile(config)
     files.push({ path: join('.ralph-container', 'Dockerfile'), content: dockerfile })
 
-    const entrypoint = await generateEntrypoint()
+    const entrypoint = await generateEntrypoint(config)
     files.push({ path: join('.ralph-container', 'entrypoint.ts'), content: entrypoint })
 
     const compose = await generateCompose(config)

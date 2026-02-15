@@ -8,15 +8,15 @@ export default defineCommand({
     description: 'Stop + start container',
   },
   args: {
-    'no-attach': {
+    attach: {
       type: 'boolean',
-      description: 'Start without attaching',
+      description: 'Attach a bash shell after starting',
       default: false,
     },
   },
   async run({ args }) {
     await stopContainer()
     const config = await loadRalphConfig()
-    await startContainer(config, { noAttach: args['no-attach'] })
+    await startContainer(config, { attach: args.attach })
   },
 })

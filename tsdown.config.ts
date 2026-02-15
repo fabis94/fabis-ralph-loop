@@ -12,9 +12,8 @@ export default defineConfig({
   hash: false,
   clean: true,
   async onSuccess() {
-    // Copy templates, static files, and uac-templates to dist for runtime access
+    // Copy templates and uac-templates to dist for runtime access
     await cp(join('src', 'templates'), join('dist', 'templates'), { recursive: true })
-    await cp(join('src', 'static'), join('dist', 'static'), { recursive: true })
     await cp(join('src', 'uac-templates'), join('dist', 'uac-templates'), { recursive: true })
   },
 })

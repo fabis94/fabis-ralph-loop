@@ -86,10 +86,41 @@ describe('generateDockerfile', () => {
     const result = await generateDockerfile(config)
 
     expect(result).toContain('RUN corepack enable')
-    // userSetup should appear after USER node
-    const userNodeIdx = result.indexOf('USER node')
+    // userSetup should appear after USER sandbox
+    const userIdx = result.indexOf('USER sandbox')
     const hookIdx = result.indexOf('RUN corepack enable')
-    expect(hookIdx).toBeGreaterThan(userNodeIdx)
+    expect(hookIdx).toBeGreaterThan(userIdx)
+  })
+
+  it('creates sandbox user with UID 1000 by default', async () => {
+    const config = makeConfig()
+    const result = await generateDockerfile(config)
+
+    expect(result).toContain('groupadd -g 1000 sandbox')
+    expect(result).toContain('useradd -m -u 1000 -g 1000')
+    expect(result).toContain('USER sandbox')
+    expect(result).toContain('/home/sandbox/.claude')
+  })
+
+  it('reuses existing user when container.user is set', async () => {
+    const config = makeConfig({
+      container: { name: 'test', user: 'node' },
+    })
+    const result = await generateDockerfile(config)
+
+    expect(result).not.toContain('groupadd')
+    expect(result).not.toContain('useradd')
+    expect(result).toContain('USER node')
+    expect(result).toContain('/home/node/.claude')
+    expect(result).toContain('node ALL=(ALL) NOPASSWD:ALL')
+  })
+
+  it('errors clearly when UID 1000 is taken during sandbox creation', async () => {
+    const config = makeConfig()
+    const result = await generateDockerfile(config)
+
+    expect(result).toContain('Set container.user')
+    expect(result).toContain('fabis-ralph-loop.config.ts')
   })
 
   it('includes generated header', async () => {

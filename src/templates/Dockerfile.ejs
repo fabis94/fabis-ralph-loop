@@ -43,8 +43,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 <%= instruction %>
 <% } -%>
 
+<% if (createUser) { -%>
 # === User setup ===
-RUN echo 'node ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+# hadolint ignore=SC2015
+RUN if id -nu 1000 >/dev/null 2>&1; then \
+      echo "ERROR: UID 1000 is already taken by user '$(id -nu 1000)' in this base image." && \
+      echo "Set container.user to '$(id -nu 1000)' in fabis-ralph-loop.config.ts to reuse it." && \
+      exit 1; \
+    fi \
+    && if getent group 1000 >/dev/null 2>&1; then \
+      echo "ERROR: GID 1000 is already taken by group '$(getent group 1000 | cut -d: -f1)' in this base image." && \
+      echo "Set container.user to an existing user in fabis-ralph-loop.config.ts." && \
+      exit 1; \
+    fi \
+    && groupadd -g 1000 sandbox \
+    && useradd -m -u 1000 -g 1000 -s /bin/bash sandbox \
+    && echo 'sandbox ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+<% } else { -%>
+# === User setup (reusing existing user from base image) ===
+RUN echo '<%= user %> ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+<% } -%>
 
 # Hook direnv into bash for interactive shells
 # SC2016: single quotes are intentional
@@ -54,16 +72,16 @@ RUN printf 'eval "$(direnv hook bash)" || true\n' >> /etc/bash.bashrc \
 
 WORKDIR /workspace
 
-USER node
+USER <%= user %>
 <% for (const instruction of hooks.userSetup) { %>
 <%= instruction %>
 <% } %>
 # === Claude CLI ===
 # hadolint ignore=DL4006
-RUN mkdir -p /home/node/.claude /home/node/.local/share/direnv/allow \
-    && printf '{"hasCompletedOnboarding":true,"bypassPermissionsModeAccepted":true}\n' > /home/node/.claude.json \
+RUN mkdir -p <%= homeDir %>/.claude <%= homeDir %>/.local/share/direnv/allow \
+    && printf '{"hasCompletedOnboarding":true,"bypassPermissionsModeAccepted":true}\n' > <%= homeDir %>/.claude.json \
     && curl -fsSL https://claude.ai/install.sh | bash
-ENV PATH="/home/node/.local/bin:${PATH}"
+ENV PATH="<%= homeDir %>/.local/bin:${PATH}"
 <% if (playwright) { %>
 # === Playwright MCP pre-install ===
 RUN npx -y @playwright/mcp@latest --help 2>/dev/null || true

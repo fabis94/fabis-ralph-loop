@@ -1,9 +1,14 @@
-import { readFile } from 'node:fs/promises'
-import { join } from 'node:path'
-import { resolveAssetDir } from '../utils/template.js'
+import { renderTemplate, GENERATED_HEADER } from '../utils/template.js'
+import type { ResolvedConfig } from '../config/schema.js'
 
-const STATIC_DIR = resolveAssetDir('static', import.meta.url)
-
-export async function generateEntrypoint(): Promise<string> {
-  return readFile(join(STATIC_DIR, 'entrypoint.ts'), 'utf8')
+export async function generateEntrypoint(config: ResolvedConfig): Promise<string> {
+  const user = config.container.user
+  return renderTemplate('entrypoint.ts.ejs', {
+    generatedHeader: GENERATED_HEADER.replace(/^# /gm, '// '),
+    agent: config.defaults.agent,
+    shadowVolumes: config.container.shadowVolumes,
+    entrypointSetup: config.container.hooks.entrypointSetup,
+    user,
+    homeDir: `/home/${user}`,
+  })
 }

@@ -8,11 +8,13 @@ const backpressureCommandSchema = z.object({
 const containerHooksSchema = z.object({
   rootSetup: z.array(z.string()).default([]),
   userSetup: z.array(z.string()).default([]),
+  entrypointSetup: z.array(z.string()).default([]),
 })
 
 const containerSchema = z.object({
   name: z.string().min(1),
   baseImage: z.string().min(1).default('node:22-bookworm'),
+  user: z.string().min(1).default('sandbox'),
   systemPackages: z.array(z.string()).default([]),
   playwright: z.boolean().default(false),
   networkMode: z.string().default('host'),
@@ -21,7 +23,7 @@ const containerSchema = z.object({
   capabilities: z.array(z.string()).default([]),
   volumes: z.array(z.string()).default([]),
   shadowVolumes: z.array(z.string()).default([]),
-  persistVolumes: z.record(z.string()).default({ 'ralph-claude-config': '/home/node/.claude' }),
+  persistVolumes: z.record(z.string()).default({ 'ralph-claude-config': '/home/sandbox/.claude' }),
   hooks: containerHooksSchema.default({}),
 })
 
