@@ -35,24 +35,42 @@ These are UAC templates **bundled with the package** and delivered to consumers.
 - Modifying PRD generation, Ralph JSON conversion, or other user-facing workflows
 - Adding new skills or templates that consumer projects should inherit
 
-**How they work:**
+**How they work — Two-Level EJS:**
 
-- In **UAC mode**: copied as-is into the consumer's UAC templates directory, then rendered by their `uac generate`
-- In **direct mode**: rendered with EJS using the consumer's project config and written directly to `.claude/skills/`
+Shipped templates support two levels of EJS that are processed at different times:
 
-**EJS variables available:** `backpressureCommands`, `projectName`, `projectContext`, `openAppSkill`, `playwright` (injected from the consumer's `fabis-ralph-loop.config.ts`)
+| Level       | Syntax in source     | Processed by                                            | Variables                                                                                            |
+| ----------- | -------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Level 1** | `<%% %>` `<%%= %>`   | `ralph-loop generate`                                   | `backpressureCommands`, `projectName`, `projectContext`, `openAppSkill`, `playwright`, full `config` |
+| **Level 2** | `<%%% %>` `<%%%= %>` | `uac generate` (or UAC programmatic API in direct mode) | `target`, path helpers, UAC config variables                                                         |
+
+EJS's `<%%%` escape syntax outputs a literal `<%%` after Level 1 rendering — this is how Level 2 survives the first pass.
+
+**UAC mode flow:**
+
+1. `ralph-loop generate` → renders Level 1 EJS → writes to `.universal-ai-config/skills/` (Level 2 `<%%% %>` becomes `<%% %>`)
+2. Consumer runs `uac generate` → renders Level 2 EJS + frontmatter mapping → writes to `.claude/skills/`
+
+**Direct mode flow:**
+
+1. `ralph-loop generate` → renders Level 1 EJS → writes to a temp dir as UAC-format templates
+2. Calls UAC's programmatic `generate()` API on the temp dir → handles Level 2 EJS + frontmatter mapping
+3. Calls `writeGeneratedFiles()` → writes to `.claude/skills/`
+4. Cleans up temp dir
+
+**Level 1 variables available:** `backpressureCommands`, `projectName`, `projectContext`, `openAppSkill`, `playwright`, `config` (full `ResolvedConfig` object)
 
 ## Decision Checklist
 
 Ask: **Who benefits from this change?**
 
-| Question                  | Repo (`.universal-ai-config/`)         | Shipped (`src/uac-templates/`)                    |
-| ------------------------- | -------------------------------------- | ------------------------------------------------- |
-| Who uses it?              | Developers working on fabis-ralph-loop | Consumers who install this package                |
-| Where does it run?        | In this repo                           | In consumer projects                              |
-| What triggers generation? | `pnpm uac generate`                    | `ralph-loop generate`                             |
-| Can it use EJS?           | Yes (`target`, `config`, path helpers) | Yes (`backpressureCommands`, `projectName`, etc.) |
-| File structure            | Standard UAC layout                    | Mirrors UAC layout (currently `skills/` only)     |
+| Question                  | Repo (`.universal-ai-config/`)         | Shipped (`src/uac-templates/`)                                               |
+| ------------------------- | -------------------------------------- | ---------------------------------------------------------------------------- |
+| Who uses it?              | Developers working on fabis-ralph-loop | Consumers who install this package                                           |
+| Where does it run?        | In this repo                           | In consumer projects                                                         |
+| What triggers generation? | `pnpm uac generate`                    | `ralph-loop generate`                                                        |
+| Can it use EJS?           | Yes (`target`, `config`, path helpers) | Yes — Level 1: `<%% %>` for ralph-loop vars; Level 2: `<%%% %>` for UAC vars |
+| File structure            | Standard UAC layout                    | Mirrors UAC layout (currently `skills/` only)                                |
 
 ## Examples
 
