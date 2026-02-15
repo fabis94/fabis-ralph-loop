@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { consola } from 'consola'
 import { execAgent } from '../container/exec.js'
@@ -45,6 +46,12 @@ export async function runLoop(config: ResolvedConfig, options: RunOptions): Prom
   const model = options.model || config.defaults.model
   const verbose = options.verbose ?? config.defaults.verbose
   const { sleepBetweenMs, completionSignal } = config.defaults
+
+  if (!existsSync('/.dockerenv')) {
+    consola.warn(
+      'It looks like you are running outside a Docker container. The loop is designed to run inside the Ralph container (use `ralph-loop start` to launch it).',
+    )
+  }
 
   await ensureProgressFile()
 
