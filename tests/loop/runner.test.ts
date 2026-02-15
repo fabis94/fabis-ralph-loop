@@ -35,7 +35,7 @@ function makeConfig(overrides: Record<string, unknown> = {}) {
 }
 
 describe('runLoop', () => {
-  let origExitCode: number | undefined
+  let origExitCode: typeof process.exitCode
 
   beforeEach(() => {
     vi.resetAllMocks()

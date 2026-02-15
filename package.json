@@ -25,6 +25,7 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "tsc:check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "unused:check": "knip",

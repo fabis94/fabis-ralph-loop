@@ -8,6 +8,7 @@ export default defineConfig({
     cli: 'src/cli.ts',
   },
   format: 'esm',
+  tsconfig: 'tsconfig.build.json',
   dts: { isolatedDeclarations: false },
   hash: false,
   clean: true,
