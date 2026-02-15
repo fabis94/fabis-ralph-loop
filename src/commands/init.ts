@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs'
 import { consola } from 'consola'
 import { loadRalphConfig } from '../config/loader.js'
 import { generateAll } from '../generators/index.js'
+import { ensureGitignoreBlock } from '../utils/gitignore.js'
 
 const SAMPLE_CONFIG = `import { defineConfig } from 'fabis-ralph-loop'
 
@@ -47,6 +48,8 @@ export default defineCommand({
       await writeFile(configPath, SAMPLE_CONFIG, 'utf8')
       consola.success(`Created ${configPath}`)
     }
+
+    await ensureGitignoreBlock()
 
     // Load config and generate
     const config = await loadRalphConfig()

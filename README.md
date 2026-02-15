@@ -97,6 +97,26 @@ export default defineConfig({
 })
 ```
 
+### Overrides Config
+
+For environment-specific settings that shouldn't be committed (different models, debug flags, local API keys), create a `fabis-ralph-loop.overrides.config.ts`:
+
+```ts
+import { defineOverridesConfig } from 'fabis-ralph-loop'
+
+export default defineOverridesConfig({
+  defaults: {
+    model: 'opus',
+    verbose: true,
+  },
+  container: {
+    env: { DEBUG: 'true' },
+  },
+})
+```
+
+The overrides file is **gitignored automatically** by `fabis-ralph-loop init`. It gets deep-merged on top of the base config: objects merge recursively, arrays are replaced entirely, and scalars are overwritten.
+
 ## CLI Commands
 
 All commands run on the **host machine** via `npx fabis-ralph-loop <command>`:

@@ -12,6 +12,9 @@ vi.mock('../../src/config/loader.js', () => ({
 vi.mock('../../src/generators/index.js', () => ({
   generateAll: vi.fn(),
 }))
+vi.mock('../../src/utils/gitignore.js', () => ({
+  ensureGitignoreBlock: vi.fn(),
+}))
 vi.mock('consola', () => ({
   consola: { warn: vi.fn(), success: vi.fn() },
 }))

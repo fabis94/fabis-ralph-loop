@@ -225,6 +225,30 @@ Controls how Ralph generates skill files for the AI agent.
 
 ---
 
+## Overrides File
+
+For environment-specific settings that shouldn't be committed, users can create `fabis-ralph-loop.overrides.config.ts`:
+
+```typescript
+import { defineOverridesConfig } from 'fabis-ralph-loop'
+
+export default defineOverridesConfig({
+  // Only specify what you want to override
+  defaults: { model: 'opus', verbose: true },
+  container: { env: { DEBUG: 'true' } },
+})
+```
+
+**When to suggest overrides vs base config:**
+
+- Local-only settings (debug flags, developer preferences) → overrides file
+- Environment-specific values (API keys, local URLs) → overrides file
+- Project-wide settings shared by the team → base config
+
+The overrides file is gitignored by default. It is deep-merged: objects merge recursively, arrays are replaced entirely, scalars are overwritten.
+
+---
+
 ## Common Tasks
 
 ### Adding a new backpressure command

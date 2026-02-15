@@ -15,6 +15,13 @@ import { ralphLoopConfigSchema } from '../../src/config/schema.js'
 const mockLoadConfig = vi.mocked(loadConfig)
 const mockApplyDefaults = vi.mocked(applyPlaywrightDefaults)
 
+/** Helper: mock base config (first call) and overrides (second call) */
+function mockConfigs(base: unknown, overrides: unknown = {}) {
+  mockLoadConfig
+    .mockResolvedValueOnce({ config: base } as never)
+    .mockResolvedValueOnce({ config: overrides } as never)
+}
+
 describe('loadRalphConfig', () => {
   beforeEach(() => {
     vi.resetAllMocks()
@@ -23,7 +30,7 @@ describe('loadRalphConfig', () => {
 
   it('returns resolved config for valid input', async () => {
     const validConfig = { project: { name: 'Test' } }
-    mockLoadConfig.mockResolvedValue({ config: validConfig } as never)
+    mockConfigs(validConfig)
 
     const result = await loadRalphConfig()
 
@@ -32,7 +39,7 @@ describe('loadRalphConfig', () => {
 
   it('calls applyPlaywrightDefaults on parsed config', async () => {
     const validConfig = { project: { name: 'Test' } }
-    mockLoadConfig.mockResolvedValue({ config: validConfig } as never)
+    mockConfigs(validConfig)
 
     await loadRalphConfig()
 
@@ -40,19 +47,25 @@ describe('loadRalphConfig', () => {
     expect(mockApplyDefaults).toHaveBeenCalledWith(expectedParsed)
   })
 
-  it('passes cwd to c12 loadConfig', async () => {
+  it('passes cwd to c12 loadConfig for both base and overrides', async () => {
     const validConfig = { project: { name: 'Test' } }
-    mockLoadConfig.mockResolvedValue({ config: validConfig } as never)
+    mockConfigs(validConfig)
 
     await loadRalphConfig('/custom/dir')
 
-    expect(mockLoadConfig).toHaveBeenCalledWith(
+    expect(mockLoadConfig).toHaveBeenCalledTimes(2)
+    expect(mockLoadConfig).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({ cwd: '/custom/dir', name: 'fabis-ralph-loop' }),
+    )
+    expect(mockLoadConfig).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ cwd: '/custom/dir', name: 'fabis-ralph-loop.overrides' }),
     )
   })
 
   it('throws on missing config', async () => {
-    mockLoadConfig.mockResolvedValue({ config: {} } as never)
+    mockConfigs({})
 
     await expect(loadRalphConfig()).rejects.toThrow(
       'No fabis-ralph-loop config found. Run `fabis-ralph-loop init` to create one.',
@@ -60,16 +73,86 @@ describe('loadRalphConfig', () => {
   })
 
   it('throws on null config', async () => {
-    mockLoadConfig.mockResolvedValue({ config: null } as never)
+    mockConfigs(null)
 
     await expect(loadRalphConfig()).rejects.toThrow('No fabis-ralph-loop config found')
   })
 
   it('throws on invalid config with Zod issue details', async () => {
-    mockLoadConfig.mockResolvedValue({
-      config: { project: { name: '' } },
-    } as never)
+    mockConfigs({ project: { name: '' } })
 
     await expect(loadRalphConfig()).rejects.toThrow('Invalid fabis-ralph-loop config')
+  })
+})
+
+describe('loadRalphConfig with overrides', () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    mockApplyDefaults.mockImplementation((config: unknown) => config as never)
+  })
+
+  it('merges overrides on top of base config', async () => {
+    mockConfigs(
+      { project: { name: 'Test' }, defaults: { model: 'sonnet' } },
+      { defaults: { model: 'opus' } },
+    )
+
+    const result = await loadRalphConfig()
+
+    expect(result.defaults.model).toBe('opus')
+    expect(result.project.name).toBe('Test')
+  })
+
+  it('works when no overrides file exists', async () => {
+    mockConfigs({ project: { name: 'Test' } }, {})
+
+    const result = await loadRalphConfig()
+
+    expect(result.project.name).toBe('Test')
+  })
+
+  it('works when overrides config is null', async () => {
+    mockConfigs({ project: { name: 'Test' } }, null)
+
+    const result = await loadRalphConfig()
+
+    expect(result.project.name).toBe('Test')
+  })
+
+  it('includes "after merging overrides" in error when overrides cause invalid config', async () => {
+    mockConfigs({ project: { name: 'Test' } }, { project: { name: '' } })
+
+    await expect(loadRalphConfig()).rejects.toThrow('after merging overrides')
+  })
+
+  it('does not include "after merging overrides" when base config is invalid without overrides', async () => {
+    mockConfigs({ project: { name: '' } })
+
+    await expect(loadRalphConfig()).rejects.toThrow('Invalid fabis-ralph-loop config:')
+    await expect(loadRalphConfig()).rejects.not.toThrow('after merging overrides')
+  })
+
+  it('deep merges nested container settings', async () => {
+    mockConfigs(
+      {
+        project: { name: 'Test' },
+        container: {
+          name: 'base',
+          systemPackages: ['git'],
+          hooks: { rootSetup: ['RUN apt-get update'] },
+        },
+      },
+      {
+        container: {
+          systemPackages: ['ripgrep'],
+        },
+      },
+    )
+
+    const result = await loadRalphConfig()
+
+    expect(result.container.name).toBe('base')
+    expect(result.container.systemPackages).toEqual(['ripgrep'])
+    expect(result.container.hooks.rootSetup).toEqual(['RUN apt-get update'])
   })
 })

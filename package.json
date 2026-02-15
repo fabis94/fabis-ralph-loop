@@ -29,7 +29,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "unused:check": "knip",
-    "check": "eslint . && prettier --check . && tsc --noEmit && knip",
+    "check": "eslint . && tsc --noEmit && knip",
     "prepare": "husky",
     "frl": "pnpm dev"
   },

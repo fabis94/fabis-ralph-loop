@@ -30,14 +30,14 @@ CLI npm package that extracts the common Claude Ralph autonomous coding loop con
 
 ## Project Structure
 
-- `src/config/` — Zod schema, defaults (Playwright auto-config), config loader (c12)
+- `src/config/` — Zod schema, defaults (Playwright auto-config), config loader (c12), config merge logic
 - `src/commands/` — CLI subcommands (init, generate, start, stop, restart, logs, run, exec)
 - `src/generators/` — File generators (Dockerfile, compose, entrypoint, prompt, skills)
 - `src/templates/` — EJS templates (Dockerfile.ejs, docker-compose.yml.ejs, entrypoint.ts.ejs, ralph-prompt.md.ejs)
 - `src/uac-templates/` — UAC skill templates for direct copy or EJS rendering (prd, ralph, update-fabis-ralph-loop-config)
 - `src/container/` — Docker container lifecycle and exec helpers
 - `src/loop/` — Ralph loop runner, progress parser, branch archive logic
-- `src/utils/` — Shared utilities (template rendering, Docker helpers)
+- `src/utils/` — Shared utilities (template rendering, Docker helpers, gitignore management)
 - `src/index.ts` — Public API exports
 - `tests/` — Mirrors `src/` structure; includes `tests/helpers/` for shared test utilities
 
@@ -50,6 +50,7 @@ CLI npm package that extracts the common Claude Ralph autonomous coding loop con
 - Use `consola` for all user-facing logging — never raw `console.log`
 - Config types: `RalphLoopConfig` = user input, `ResolvedConfig` = after Zod parse + defaults
 - Zod schemas use `.prefault()` for nested object defaults initialization
+- `fabis-ralph-loop.overrides.config.{ts,js,...}` — optional overrides file, gitignored, deep-merged on top of base config (arrays replace, objects recurse, scalars replace). Use `defineOverridesConfig` helper for type safety.
 
 ## Scripts
 
