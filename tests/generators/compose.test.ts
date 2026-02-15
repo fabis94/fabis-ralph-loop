@@ -1,16 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ralphLoopConfigSchema } from '../../src/config/schema.js'
-import { applyPlaywrightDefaults } from '../../src/config/defaults.js'
 import { generateCompose } from '../../src/generators/compose.js'
-
-function makeConfig(overrides: Record<string, unknown> = {}) {
-  return applyPlaywrightDefaults(
-    ralphLoopConfigSchema.parse({
-      project: { name: 'Test' },
-      ...overrides,
-    }),
-  )
-}
+import { makeConfig } from '../helpers/make-config.js'
 
 describe('generateCompose', () => {
   it('generates basic compose file', async () => {

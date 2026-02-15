@@ -22,8 +22,7 @@ import { archiveIfBranchChanged, ensureProgressFile } from '../../src/loop/archi
 import { readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { runLoop } from '../../src/loop/runner.js'
-import { ralphLoopConfigSchema } from '../../src/config/schema.js'
-import { applyPlaywrightDefaults } from '../../src/config/defaults.js'
+import { makeConfig as _makeConfig } from '../helpers/make-config.js'
 
 const mockExecAgent = vi.mocked(execAgent)
 const mockArchive = vi.mocked(archiveIfBranchChanged)
@@ -32,13 +31,7 @@ const mockReadFile = vi.mocked(readFile)
 const mockExistsSync = vi.mocked(existsSync)
 
 function makeConfig(overrides: Record<string, unknown> = {}) {
-  return applyPlaywrightDefaults(
-    ralphLoopConfigSchema.parse({
-      project: { name: 'Test' },
-      defaults: { sleepBetweenMs: 0 },
-      ...overrides,
-    }),
-  )
+  return _makeConfig({ defaults: { sleepBetweenMs: 0 }, ...overrides })
 }
 
 describe('runLoop', () => {

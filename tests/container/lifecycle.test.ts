@@ -13,17 +13,10 @@ vi.mock('consola', () => ({
 import { execa } from 'execa'
 import { isContainerRunning } from '../../src/utils/docker.js'
 import { startContainer, stopContainer } from '../../src/container/lifecycle.js'
-import { ralphLoopConfigSchema } from '../../src/config/schema.js'
-import { applyPlaywrightDefaults } from '../../src/config/defaults.js'
+import { makeConfig } from '../helpers/make-config.js'
 
 const mockExeca = vi.mocked(execa)
 const mockIsRunning = vi.mocked(isContainerRunning)
-
-function makeConfig(overrides: Record<string, unknown> = {}) {
-  return applyPlaywrightDefaults(
-    ralphLoopConfigSchema.parse({ project: { name: 'Test' }, ...overrides }),
-  )
-}
 
 describe('startContainer', () => {
   let origToken: string | undefined

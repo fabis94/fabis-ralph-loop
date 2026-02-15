@@ -1,15 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { ralphLoopConfigSchema } from '../../src/config/schema.js'
-import { applyPlaywrightDefaults } from '../../src/config/defaults.js'
 import { generatePrompt } from '../../src/generators/prompt.js'
+import { makeConfig as _makeConfig } from '../helpers/make-config.js'
 
 function makeConfig(overrides: Record<string, unknown> = {}) {
-  return applyPlaywrightDefaults(
-    ralphLoopConfigSchema.parse({
-      project: { name: 'Test Project' },
-      ...overrides,
-    }),
-  )
+  return _makeConfig({ project: { name: 'Test Project' }, ...overrides })
 }
 
 describe('generatePrompt', () => {

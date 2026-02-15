@@ -28,8 +28,7 @@ import { generate, writeGeneratedFiles } from 'universal-ai-config'
 import { readdir, readFile, writeFile, mkdir, rm } from 'node:fs/promises'
 import ejs from 'ejs'
 import { generateSkills } from '../../src/generators/skills.js'
-import { ralphLoopConfigSchema } from '../../src/config/schema.js'
-import { applyPlaywrightDefaults } from '../../src/config/defaults.js'
+import { makeConfig } from '../helpers/make-config.js'
 
 const mockGenerate = vi.mocked(generate)
 const mockWriteGeneratedFiles = vi.mocked(writeGeneratedFiles)
@@ -39,12 +38,6 @@ const mockWriteFile = vi.mocked(writeFile)
 const mockMkdir = vi.mocked(mkdir)
 const mockRm = vi.mocked(rm)
 const mockEjsRender = vi.mocked(ejs.render)
-
-function makeConfig(overrides: Record<string, unknown> = {}) {
-  return applyPlaywrightDefaults(
-    ralphLoopConfigSchema.parse({ project: { name: 'Test' }, ...overrides }),
-  )
-}
 
 function mockSkillDirs(names: string[]) {
   mockReaddir.mockResolvedValue(names.map((name) => ({ name, isDirectory: () => true })) as never)

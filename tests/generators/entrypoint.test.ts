@@ -1,16 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ralphLoopConfigSchema } from '../../src/config/schema.js'
-import { applyPlaywrightDefaults } from '../../src/config/defaults.js'
 import { generateEntrypoint } from '../../src/generators/entrypoint.js'
-
-function makeConfig(overrides: Record<string, unknown> = {}) {
-  return applyPlaywrightDefaults(
-    ralphLoopConfigSchema.parse({
-      project: { name: 'Test' },
-      ...overrides,
-    }),
-  )
-}
+import { makeConfig } from '../helpers/make-config.js'
 
 describe('generateEntrypoint', () => {
   it('generates entrypoint with default config', async () => {
