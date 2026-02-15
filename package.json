@@ -1,6 +1,6 @@
 {
   "name": "fabis-ralph-loop",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "CLI for setting up and running Claude Ralph autonomous coding loops in Docker containers",
   "repository": {
     "type": "git",
