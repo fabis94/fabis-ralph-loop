@@ -18,13 +18,15 @@ const containerSchema = z.object({
   systemPackages: z.array(z.string()).default([]),
   playwright: z.boolean().default(false),
   networkMode: z.string().default('host'),
-  env: z.record(z.string()).default({}),
+  env: z.record(z.string(), z.string()).default({}),
   shmSize: z.string().default('64m'),
   capabilities: z.array(z.string()).default([]),
   volumes: z.array(z.string()).default([]),
   shadowVolumes: z.array(z.string()).default([]),
-  persistVolumes: z.record(z.string()).default({ 'ralph-claude-config': '/home/sandbox/.claude' }),
-  hooks: containerHooksSchema.default({}),
+  persistVolumes: z
+    .record(z.string(), z.string())
+    .default({ 'ralph-claude-config': '/home/sandbox/.claude' }),
+  hooks: containerHooksSchema.prefault({}),
 })
 
 const setupSchema = z.object({
@@ -53,11 +55,11 @@ const outputSchema = z.object({
 })
 
 export const ralphLoopConfigSchema = z.object({
-  container: containerSchema.default({ name: 'ralph-container' }),
-  setup: setupSchema.default({}),
-  defaults: defaultsSchema.default({}),
+  container: containerSchema.prefault({ name: 'ralph-container' }),
+  setup: setupSchema.prefault({}),
+  defaults: defaultsSchema.prefault({}),
   project: projectSchema,
-  output: outputSchema.default({}),
+  output: outputSchema.prefault({}),
 })
 
 export type RalphLoopConfig = z.input<typeof ralphLoopConfigSchema>
