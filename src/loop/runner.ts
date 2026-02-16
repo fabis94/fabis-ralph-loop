@@ -12,6 +12,12 @@ interface RunOptions {
   verbose?: boolean
 }
 
+interface IterationStats {
+  iteration: number
+  turns: number
+  cost: number | null
+}
+
 function buildAgentArgs(agent: string, options: { model: string; verbose: boolean }): string[] {
   if (agent === 'claude') {
     const args = ['--dangerously-skip-permissions', '--model', options.model, '--print']
@@ -22,6 +28,42 @@ function buildAgentArgs(agent: string, options: { model: string; verbose: boolea
   }
   // Future: support other agents
   return []
+}
+
+function formatCost(cost: number | null): string {
+  return cost != null ? `$${cost.toFixed(4)}` : '$?'
+}
+
+function logSummaryTable(stats: IterationStats[]): void {
+  const totalTurns = stats.reduce((sum, s) => sum + s.turns, 0)
+  const costs = stats.map((s) => s.cost)
+  const totalCost = costs.every((c): c is number => c != null)
+    ? costs.reduce((sum, c) => sum + c, 0)
+    : null
+
+  const rows = stats.map((s) => [String(s.iteration), String(s.turns), formatCost(s.cost)])
+  const totalRow = ['Total', String(totalTurns), formatCost(totalCost)]
+
+  const headers = ['Iteration', 'Turns', 'Cost']
+  const allRows = [...rows, totalRow]
+  const widths = headers.map((h, col) => {
+    const cellLengths = allRows.map((r) => (r[col] ?? '').length)
+    return Math.max(h.length, ...cellLengths)
+  })
+
+  const formatRow = (row: string[]) => row.map((cell, i) => cell.padEnd(widths[i] ?? 0)).join('  ')
+  const separator = widths.map((w) => '-'.repeat(w)).join('  ')
+
+  const lines = [
+    '',
+    formatRow(headers),
+    separator,
+    ...rows.map(formatRow),
+    separator,
+    formatRow(totalRow),
+  ]
+
+  consola.info(lines.join('\n'))
 }
 
 function sleep(ms: number, signal?: AbortSignal): Promise<void> {
@@ -78,6 +120,8 @@ export async function runLoop(config: ResolvedConfig, options: RunOptions): Prom
     ].join(' | '),
   )
 
+  const iterationStats: IterationStats[] = []
+
   try {
     for (let i = 1; i <= options.iterations; i++) {
       if (signal.aborted) break
@@ -111,6 +155,7 @@ export async function runLoop(config: ResolvedConfig, options: RunOptions): Prom
           const progress = parser.getResult()
           finalOutput = progress.output
           turnsUsed = String(progress.turns)
+          iterationStats.push({ iteration: i, turns: progress.turns, cost: progress.cost })
 
           if (result.exitCode !== 0) {
             consola.warn(`Agent exited with code ${result.exitCode}`)
@@ -160,6 +205,9 @@ export async function runLoop(config: ResolvedConfig, options: RunOptions): Prom
     consola.warn('Check .ralph/progress.txt for status.')
     process.exitCode = 1
   } finally {
+    if (verbose && iterationStats.length > 0) {
+      logSummaryTable(iterationStats)
+    }
     process.removeListener('SIGINT', handleSignal)
     process.removeListener('SIGTERM', handleSignal)
   }

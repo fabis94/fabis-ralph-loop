@@ -21,6 +21,7 @@ import { execAgent } from '../../src/container/exec.js'
 import { archiveIfBranchChanged, ensureProgressFile } from '../../src/loop/archive.js'
 import { readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
+import { consola } from 'consola'
 import { runLoop } from '../../src/loop/runner.js'
 import { makeConfig as _makeConfig } from '../helpers/make-config.js'
 
@@ -191,5 +192,76 @@ describe('runLoop', () => {
     await runLoop(config, { iterations: 1 })
 
     expect(mockReadFile).toHaveBeenCalledWith('.ralph-container/ralph-prompt.md', 'utf8')
+  })
+
+  it('logs summary table in verbose mode', async () => {
+    const streamLines = (turns: number, cost: number) => {
+      const lines: string[] = []
+      for (let t = 0; t < turns; t++) {
+        lines.push(
+          JSON.stringify({
+            type: 'assistant',
+            message: { content: [{ type: 'text', text: 'working' }] },
+          }),
+        )
+      }
+      lines.push(JSON.stringify({ type: 'result', result: 'done', total_cost_usd: cost }))
+      return lines.join('\n') + '\n'
+    }
+
+    let callCount = 0
+    mockExecAgent.mockImplementation(async (opts: { onData?: (chunk: Buffer) => void }) => {
+      callCount++
+      const data = callCount === 1 ? streamLines(5, 0.03) : streamLines(8, 0.05)
+      opts.onData?.(Buffer.from(data))
+      return { stdout: '', stderr: '', exitCode: 0, aborted: false }
+    })
+
+    const config = makeConfig()
+    await runLoop(config, { iterations: 2, verbose: true })
+
+    const mockInfo = vi.mocked(consola.info)
+    const tableCall = mockInfo.mock.calls.find(
+      (args) =>
+        typeof args[0] === 'string' &&
+        args[0].includes('Iteration') &&
+        args[0].includes('Turns') &&
+        args[0].includes('Cost'),
+    )
+
+    expect(tableCall).toBeDefined()
+    const table = tableCall![0] as string
+    expect(table).toContain('1')
+    expect(table).toContain('5')
+    expect(table).toContain('$0.0300')
+    expect(table).toContain('2')
+    expect(table).toContain('8')
+    expect(table).toContain('$0.0500')
+    expect(table).toContain('Total')
+    expect(table).toContain('13')
+    expect(table).toContain('$0.0800')
+  })
+
+  it('does not log summary table in non-verbose mode', async () => {
+    mockExecAgent.mockResolvedValue({
+      stdout: 'working',
+      stderr: '',
+      exitCode: 0,
+      aborted: false,
+    })
+
+    const config = makeConfig()
+    await runLoop(config, { iterations: 2 })
+
+    const mockInfo = vi.mocked(consola.info)
+    const tableCall = mockInfo.mock.calls.find(
+      (args) =>
+        typeof args[0] === 'string' &&
+        args[0].includes('Iteration') &&
+        args[0].includes('Turns') &&
+        args[0].includes('Cost'),
+    )
+
+    expect(tableCall).toBeUndefined()
   })
 })
