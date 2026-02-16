@@ -107,6 +107,7 @@ After completing one story (commit done, prd.json updated, progress appended):
 
 ## Rules
 
+- Do not EVER under ANY circumstances output the completion signal `<%= completionSignal %>` until you have fully completed the full plan (ALL stories now have `passes: true`)
 - Implement exactly ONE story, then stop
 - Commit frequently
 - Keep CI green
