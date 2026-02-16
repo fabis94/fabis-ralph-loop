@@ -43,7 +43,7 @@
     "consola": "^3.4.2",
     "ejs": "^4.0.1",
     "execa": "^9.5.2",
-    "universal-ai-config": "^1.7.0",
+    "universal-ai-config": "^1.9.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

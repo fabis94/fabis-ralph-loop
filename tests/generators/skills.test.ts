@@ -9,10 +9,6 @@ vi.mock('node:fs/promises', () => ({
   readFile: vi.fn(),
   writeFile: vi.fn(),
   mkdir: vi.fn(),
-  rm: vi.fn(),
-}))
-vi.mock('node:os', () => ({
-  tmpdir: vi.fn(() => '/tmp'),
 }))
 vi.mock('ejs', () => ({
   default: { render: vi.fn((template: string) => `rendered:${template}`) },
@@ -25,7 +21,7 @@ vi.mock('consola', () => ({
 }))
 
 import { generate, writeGeneratedFiles } from 'universal-ai-config'
-import { readdir, readFile, writeFile, mkdir, rm } from 'node:fs/promises'
+import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises'
 import ejs from 'ejs'
 import { generateSkills } from '../../src/generators/skills.js'
 import { makeConfig } from '../helpers/make-config.js'
@@ -36,7 +32,6 @@ const mockReaddir = vi.mocked(readdir)
 const mockReadFile = vi.mocked(readFile)
 const mockWriteFile = vi.mocked(writeFile)
 const mockMkdir = vi.mocked(mkdir)
-const mockRm = vi.mocked(rm)
 const mockEjsRender = vi.mocked(ejs.render)
 
 function mockSkillDirs(names: string[]) {
@@ -49,12 +44,11 @@ describe('generateSkills', () => {
     mockEjsRender.mockImplementation((template: string) => `rendered:${template}`)
     mockMkdir.mockResolvedValue(undefined as never)
     mockWriteFile.mockResolvedValue()
-    mockRm.mockResolvedValue()
     mockReadFile.mockResolvedValue('template content' as never)
   })
 
   describe('direct mode', () => {
-    it('renders templates and calls UAC generate', async () => {
+    it('renders templates and calls UAC generate with in-memory templates', async () => {
       mockSkillDirs(['prd', 'ralph'])
       mockGenerate.mockResolvedValue([{ path: '.claude/skills/prd.md', content: 'skill' }] as never)
       mockWriteGeneratedFiles.mockResolvedValue(undefined as never)
@@ -73,25 +67,20 @@ describe('generateSkills', () => {
         expect.objectContaining({ projectName: 'Test' }),
       )
 
-      // Writes to temp dir
-      expect(mockWriteFile).toHaveBeenCalledWith(
-        expect.stringMatching(/\/tmp\/ralph-skills-\d+\/skills\/prd\/SKILL\.md/),
-        expect.stringContaining('rendered:'),
-        'utf8',
-      )
-
-      // Calls UAC generate and writeGeneratedFiles
-      expect(mockGenerate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          root: '/project',
-          targets: ['claude'],
-          types: ['skills'],
-        }),
-      )
+      // Calls UAC generate with in-memory templates (no temp dir)
+      expect(mockGenerate).toHaveBeenCalledWith({
+        root: '/project',
+        targets: ['claude'],
+        types: ['skills'],
+        templates: [
+          { name: 'prd', type: 'skills', content: 'rendered:template content' },
+          { name: 'ralph', type: 'skills', content: 'rendered:template content' },
+        ],
+      })
       expect(mockWriteGeneratedFiles).toHaveBeenCalled()
     })
 
-    it('cleans up temp dir after generation', async () => {
+    it('does not write any intermediate files to disk', async () => {
       mockSkillDirs(['prd'])
       mockGenerate.mockResolvedValue([] as never)
       mockWriteGeneratedFiles.mockResolvedValue(undefined as never)
@@ -99,23 +88,47 @@ describe('generateSkills', () => {
       const config = makeConfig({ output: { mode: 'direct' } })
       await generateSkills(config, '/project')
 
-      expect(mockRm).toHaveBeenCalledWith(expect.stringMatching(/\/tmp\/ralph-skills-\d+/), {
-        recursive: true,
-        force: true,
-      })
+      // No temp dir creation, no intermediate file writes
+      expect(mockMkdir).not.toHaveBeenCalled()
+      expect(mockWriteFile).not.toHaveBeenCalled()
     })
 
-    it('cleans up temp dir even if generation fails', async () => {
+    it('propagates UAC generate errors', async () => {
       mockSkillDirs(['prd'])
       mockGenerate.mockRejectedValue(new Error('UAC failed'))
 
       const config = makeConfig({ output: { mode: 'direct' } })
       await expect(generateSkills(config, '/project')).rejects.toThrow('UAC failed')
+    })
 
-      expect(mockRm).toHaveBeenCalledWith(expect.stringMatching(/\/tmp\/ralph-skills-\d+/), {
-        recursive: true,
-        force: true,
+    it('passes all Level 1 variables to EJS render', async () => {
+      mockSkillDirs(['prd'])
+      mockGenerate.mockResolvedValue([] as never)
+      mockWriteGeneratedFiles.mockResolvedValue(undefined as never)
+
+      const config = makeConfig({
+        output: { mode: 'direct' },
+        project: {
+          name: 'MyApp',
+          context: 'A web app',
+          backpressureCommands: [{ name: 'lint', command: 'pnpm lint' }],
+          openAppSkill: '/open-app',
+        },
+        container: { name: 'test', playwright: true },
       })
+      await generateSkills(config, '/project')
+
+      expect(mockEjsRender).toHaveBeenCalledWith(
+        'template content',
+        expect.objectContaining({
+          projectName: 'MyApp',
+          projectContext: 'A web app',
+          backpressureCommands: [{ name: 'lint', command: 'pnpm lint' }],
+          openAppSkill: '/open-app',
+          playwright: true,
+          config,
+        }),
+      )
     })
   })
 

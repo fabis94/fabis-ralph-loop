@@ -1,9 +1,9 @@
-import { readdir, readFile, writeFile, mkdir, rm } from 'node:fs/promises'
+import { readdir, readFile, writeFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import { tmpdir } from 'node:os'
 import ejs from 'ejs'
 import { consola } from 'consola'
 import { generate, writeGeneratedFiles } from 'universal-ai-config'
+import type { InMemoryTemplate } from 'universal-ai-config'
 import type { ResolvedConfig } from '../config/schema.js'
 import { resolveAssetDir } from '../utils/template.js'
 
@@ -38,33 +38,26 @@ async function generateDirect(config: ResolvedConfig, projectRoot: string): Prom
   const variables = buildLevel1Variables(config)
   const skills = await discoverSkills()
 
-  // Render Level 1 EJS and write to a temp dir structured as UAC templates
-  const tempDir = join(tmpdir(), `ralph-skills-${Date.now()}`)
-
-  try {
-    for (const skill of skills) {
+  // Render Level 1 EJS into in-memory templates for UAC's second pass
+  const templates: InMemoryTemplate[] = await Promise.all(
+    skills.map(async (skill) => {
       const templatePath = join(UAC_TEMPLATES_DIR, 'skills', skill, 'SKILL.md')
       const template = await readFile(templatePath, 'utf8')
       const rendered = ejs.render(template, variables) as string
+      return { name: skill, type: 'skills' as const, content: rendered }
+    }),
+  )
 
-      const outDir = join(tempDir, 'skills', skill)
-      await mkdir(outDir, { recursive: true })
-      await writeFile(join(outDir, 'SKILL.md'), rendered, 'utf8')
-    }
+  // Use UAC's generate() API for the second pass (handles Level 2 EJS + frontmatter mapping)
+  const files = await generate({
+    root: projectRoot,
+    targets: ['claude'],
+    types: ['skills'],
+    templates,
+  })
 
-    // Use UAC's generate() API for the second pass (handles Level 2 EJS + frontmatter mapping)
-    const files = await generate({
-      root: projectRoot,
-      targets: ['claude'],
-      types: ['skills'],
-      overrides: { templatesDir: tempDir },
-    })
-
-    await writeGeneratedFiles(files, projectRoot)
-    consola.info(`Generated ${files.length} skill file(s)`)
-  } finally {
-    await rm(tempDir, { recursive: true, force: true })
-  }
+  await writeGeneratedFiles(files, projectRoot)
+  consola.info(`Generated ${files.length} skill file(s)`)
 }
 
 async function generateUac(config: ResolvedConfig, projectRoot: string): Promise<void> {
