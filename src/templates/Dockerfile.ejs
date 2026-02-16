@@ -89,8 +89,9 @@ RUN mkdir -p <%= homeDir %>/.claude <%= homeDir %>/.local/share/direnv/allow \
 ENV PATH="<%= homeDir %>/.local/bin:${PATH}"
 
 <% if (playwright) { %>
-# === Playwright MCP pre-install ===
-RUN npx -y @playwright/mcp@latest --help 2>/dev/null || true
+# === Playwright CLI & MCP pre-install ===
+RUN npm install -g @playwright/cli@latest \
+    && npx -y @playwright/mcp@latest --help 2>/dev/null || true
 <% } %>
 # === Environment ===
 ENV IS_SANDBOX=1
