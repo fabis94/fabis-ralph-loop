@@ -65,6 +65,7 @@ CLI npm package that extracts the common Claude Ralph autonomous coding loop con
 
 ## Testing
 
+- All changes/features/bugfixes should involve new or at the very least updated tests
 - Tests live in `tests/` mirroring `src/` directory structure
 - Use `describe`/`it`/`expect` from vitest
 - Tests may use non-null assertions and `Function` type (relaxed eslint rules for test files)

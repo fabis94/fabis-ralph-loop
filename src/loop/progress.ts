@@ -112,7 +112,9 @@ export class StreamProgressParser {
       case 'result': {
         this.resultText = message.result || ''
         this.cost = message.total_cost_usd ?? null
-        consola.info('---')
+        if (this.resultText) {
+          consola.box(this.resultText)
+        }
         consola.info(`Completed in ${this.turns} turns | Cost: $${this.cost ?? '?'}`)
         break
       }
