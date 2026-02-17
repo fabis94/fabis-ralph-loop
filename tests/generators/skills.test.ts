@@ -60,11 +60,12 @@ describe('generateSkills', () => {
       expect(mockReadFile).toHaveBeenCalledWith('/fake/uac-templates/skills/prd/SKILL.md', 'utf8')
       expect(mockReadFile).toHaveBeenCalledWith('/fake/uac-templates/skills/ralph/SKILL.md', 'utf8')
 
-      // Renders with EJS (Level 1)
+      // Renders with EJS (Level 1), escaping disabled
       expect(mockEjsRender).toHaveBeenCalledTimes(2)
       expect(mockEjsRender).toHaveBeenCalledWith(
         'template content',
         expect.objectContaining({ projectName: 'Test' }),
+        expect.objectContaining({ escape: expect.any(Function) }),
       )
 
       // Calls UAC generate with in-memory templates (no temp dir)
@@ -128,6 +129,7 @@ describe('generateSkills', () => {
           playwright: true,
           config,
         }),
+        expect.objectContaining({ escape: expect.any(Function) }),
       )
     })
   })
@@ -142,10 +144,11 @@ describe('generateSkills', () => {
       // Reads the skill template
       expect(mockReadFile).toHaveBeenCalledWith('/fake/uac-templates/skills/prd/SKILL.md', 'utf8')
 
-      // Renders with EJS (Level 1)
+      // Renders with EJS (Level 1), escaping disabled
       expect(mockEjsRender).toHaveBeenCalledWith(
         'template content',
         expect.objectContaining({ projectName: 'Test' }),
+        expect.objectContaining({ escape: expect.any(Function) }),
       )
 
       // Writes to uacTemplatesDir (not temp dir)
@@ -188,6 +191,7 @@ describe('generateSkills', () => {
           playwright: true,
           config,
         }),
+        expect.objectContaining({ escape: expect.any(Function) }),
       )
     })
   })

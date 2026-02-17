@@ -50,6 +50,24 @@ describe('generatePrompt', () => {
     expect(result).toContain('pnpm lint')
   })
 
+  it('does not HTML-escape special characters in commands', async () => {
+    const config = makeConfig({
+      project: {
+        name: 'Test',
+        backpressureCommands: [
+          { name: 'Typecheck server', command: 'cd packages/server && yarn lint:tsc' },
+        ],
+        context: "Use logger.info({ err }, 'message') style",
+      },
+    })
+    const result = await generatePrompt(config)
+
+    expect(result).toContain('cd packages/server && yarn lint:tsc')
+    expect(result).not.toContain('&amp;')
+    expect(result).toContain("logger.info({ err }, 'message')")
+    expect(result).not.toContain('&#39;')
+  })
+
   it('shows discovery fallback when no backpressure commands', async () => {
     const config = makeConfig()
     const result = await generatePrompt(config)

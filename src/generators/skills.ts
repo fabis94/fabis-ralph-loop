@@ -43,7 +43,7 @@ async function generateDirect(config: ResolvedConfig, projectRoot: string): Prom
     skills.map(async (skill) => {
       const templatePath = join(UAC_TEMPLATES_DIR, 'skills', skill, 'SKILL.md')
       const template = await readFile(templatePath, 'utf8')
-      const rendered = ejs.render(template, variables) as string
+      const rendered = ejs.render(template, variables, { escape: (s: string) => s }) as string
       return { name: skill, type: 'skills' as const, content: rendered }
     }),
   )
@@ -69,7 +69,7 @@ async function generateUac(config: ResolvedConfig, projectRoot: string): Promise
     const templatePath = join(UAC_TEMPLATES_DIR, 'skills', skill, 'SKILL.md')
     const template = await readFile(templatePath, 'utf8')
     // Render Level 1 EJS — Level 2 <%% %> becomes <% %> in output
-    const rendered = ejs.render(template, variables) as string
+    const rendered = ejs.render(template, variables, { escape: (s: string) => s }) as string
 
     const outDir = join(projectRoot, config.output.uacTemplatesDir, 'skills', skill)
     await mkdir(outDir, { recursive: true })
