@@ -7,6 +7,7 @@ describe('generateCompose', () => {
     const config = makeConfig()
     const result = await generateCompose(config)
 
+    expect(result).toContain('name: ralph-container')
     expect(result).toContain('container_name: ralph-container')
     expect(result).toContain('network_mode: host')
     expect(result).toContain('..:/workspace:cached')
@@ -72,6 +73,13 @@ describe('generateCompose', () => {
     const result = await generateCompose(config)
 
     expect(result).toContain('./data:/data:ro')
+  })
+
+  it('includes project name matching container name', async () => {
+    const config = makeConfig({ container: { name: 'my-project-ralph' } })
+    const result = await generateCompose(config)
+
+    expect(result).toContain('name: my-project-ralph')
   })
 
   it('includes extra env vars', async () => {
