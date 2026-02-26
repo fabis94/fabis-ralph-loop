@@ -92,14 +92,27 @@ describe('generatePrompt', () => {
     expect(result).toContain('ALL_DONE')
   })
 
-  it('includes Playwright browser testing section when enabled', async () => {
+  it('includes Playwright CLI browser testing section when playwright is "cli"', async () => {
     const config = makeConfig({
       container: { name: 'test', playwright: true },
     })
     const result = await generatePrompt(config)
 
+    expect(result).toContain('@playwright/cli')
+    expect(result).toContain('playwright-cli')
+    expect(result).toContain('headless Chromium')
+    expect(result).not.toContain('Playwright MCP configured')
+  })
+
+  it('includes Playwright MCP browser testing section when playwright is "mcp"', async () => {
+    const config = makeConfig({
+      container: { name: 'test', playwright: 'mcp' },
+    })
+    const result = await generatePrompt(config)
+
     expect(result).toContain('Playwright MCP')
     expect(result).toContain('headless Chromium')
+    expect(result).not.toContain('playwright-cli')
   })
 
   it('omits Playwright section when disabled and no openAppSkill', async () => {
@@ -107,6 +120,7 @@ describe('generatePrompt', () => {
     const result = await generatePrompt(config)
 
     expect(result).not.toContain('Playwright MCP')
+    expect(result).not.toContain('@playwright/cli')
     expect(result).not.toContain('Browser Testing')
   })
 

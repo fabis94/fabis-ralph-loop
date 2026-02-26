@@ -16,7 +16,14 @@ const containerSchema = z.object({
   baseImage: z.string().min(1).default('node:22-bookworm'),
   user: z.string().min(1).default('sandbox'),
   systemPackages: z.array(z.string()).default([]),
-  playwright: z.boolean().default(false),
+  playwright: z
+    .union([z.boolean(), z.enum(['cli', 'mcp'])])
+    .default(false)
+    .transform((val) => {
+      if (val === true) return 'cli' as const
+      if (val === false) return false as const
+      return val
+    }),
   networkMode: z.string().default('host'),
   env: z.record(z.string(), z.string()).default({}),
   shmSize: z.string().default('64m'),

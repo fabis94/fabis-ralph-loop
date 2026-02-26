@@ -113,13 +113,24 @@ For stories with testable logic, also include:
 "Tests pass"
 ```
 
+<% if (playwright) { %>
+
 ### For stories that change UI, also include:
 
 ```
+<% if (playwright === 'cli') { -%>
+"Verify in browser using Playwright CLI"
+<% } else { -%>
 "Verify in browser using Playwright MCP tools"
+<% } -%>
 ```
 
+<% if (playwright === 'cli') { -%>
+Frontend stories are NOT complete until visually verified. Ralph will use `playwright-cli` to navigate to the page, take snapshots/screenshots, and confirm changes work.
+<% } else { -%>
 Frontend stories are NOT complete until visually verified. Ralph will use Playwright MCP tools to navigate to the page, interact with the UI, and confirm changes work.
+<% } -%>
+<% } %>
 
 ---
 
@@ -200,8 +211,9 @@ Add ability to mark tasks with different statuses.
       "acceptanceCriteria": [
         "Each task card shows colored status badge",
         "Badge colors: gray=pending, blue=in_progress, green=done",
-        "Typecheck passes",
-        "Verify in browser using Playwright MCP tools"
+        "Typecheck passes"<% if (playwright === 'cli') { %>,
+        "Verify in browser using Playwright CLI"<% } else if (playwright === 'mcp') { %>,
+        "Verify in browser using Playwright MCP tools"<% } %>
       ],
       "priority": 2,
       "passes": false,
@@ -234,6 +246,10 @@ Before writing `.ralph/prd.json`, verify:
 - [ ] Each story is completable in one iteration (small enough)
 - [ ] Stories are ordered by dependency (schema to backend to UI)
 - [ ] Every story has "Typecheck passes" as criterion
+      <% if (playwright === 'cli') { -%>
+- [ ] UI stories have "Verify in browser using Playwright CLI" as criterion
+      <% } else if (playwright === 'mcp') { -%>
 - [ ] UI stories have "Verify in browser using Playwright MCP tools" as criterion
+      <% } -%>
 - [ ] Acceptance criteria are verifiable (not vague)
 - [ ] No story depends on a later story

@@ -76,7 +76,64 @@ Only add patterns that are **general and reusable**, not story-specific details.
 - Use `import type { ... }` for type-only imports (separate from value imports)
 <% if (openAppSkill || playwright) { %>
 ## Browser Testing
-<% if (playwright) { %>
+<% if (playwright === 'cli') { %>
+This container has `@playwright/cli` installed with headless Chromium. **Do NOT use Playwright MCP or Chrome MCP tools — use the CLI instead.**
+
+Run commands via:
+
+```bash
+playwright-cli <command>
+```
+
+### Essential Commands
+
+| Command | Description |
+|---------|-------------|
+| `open [url]` | Launch browser, optionally navigate to URL |
+| `goto <url>` | Navigate to a URL |
+| `snapshot` | Get page structure (preferred over screenshots) |
+| `screenshot [ref]` | Capture visual screenshot |
+| `click <ref>` | Click an element |
+| `fill <ref> <text>` | Fill a text field |
+| `type <text>` | Type into focused element |
+| `hover <ref>` | Hover over element |
+| `select <ref> <val>` | Choose dropdown option |
+| `press <key>` | Press a keyboard key |
+| `eval <func> [ref]` | Execute JavaScript on the page |
+| `console [level]` | Display console messages |
+| `network` | List HTTP requests since page load |
+| `tab-list` | List open tabs |
+| `tab-new [url]` | Open new tab |
+| `tab-select <index>` | Switch tab |
+| `close` | Close the page |
+
+### Session Management
+
+Use named sessions to keep browser state between commands:
+
+```bash
+playwright-cli -s=mytest open http://localhost:3000
+playwright-cli -s=mytest snapshot
+playwright-cli -s=mytest click <ref>
+playwright-cli -s=mytest close
+```
+
+### Interaction Pattern
+
+1. `snapshot` — understand page structure, get element refs
+2. Interact — `click`, `fill`, `type` using refs from snapshot
+3. `snapshot` or `screenshot` — verify result
+4. `console error` — check for errors
+
+For any story that changes UI:
+
+1. Ensure the dev servers are running before testing
+2. Use `playwright-cli` to navigate and verify the changes
+3. Capture a screenshot if helpful for the progress log
+<% if (openAppSkill) { %>
+Read `<%= openAppSkill %>` for the full app launch and authentication procedure.
+<% } -%>
+<% } else if (playwright === 'mcp') { %>
 This container has **Playwright MCP** configured with headless Chromium. For any story that changes UI:
 
 1. Ensure the dev servers are running before testing

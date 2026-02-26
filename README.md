@@ -78,7 +78,7 @@ export default defineConfig({
   },
   container: {
     name: 'my-project-ralph',
-    playwright: true, // auto-configures Playwright MCP + headless Chromium
+    playwright: true, // auto-configures Playwright CLI + headless Chromium (or 'mcp' for MCP mode)
     systemPackages: ['ripgrep'],
     env: { NODE_ENV: 'development' },
     hooks: {

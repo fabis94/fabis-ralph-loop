@@ -1,7 +1,7 @@
 import type { ResolvedConfig } from './schema.js'
 
 /**
- * Apply Playwright-specific defaults when playwright is enabled.
+ * Apply Playwright-specific defaults when playwright is enabled ('cli' or 'mcp').
  * Merges SYS_ADMIN capability and 2gb shm_size if not already set.
  */
 export function applyPlaywrightDefaults(config: ResolvedConfig): ResolvedConfig {

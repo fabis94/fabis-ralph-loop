@@ -92,13 +92,25 @@ Each story should be small enough to implement in one focused session.
 - [ ] Specific verifiable criterion
 - [ ] Another criterion
 - [ ] Typecheck passes
+      <% if (playwright === 'cli') { -%>
+- [ ] **[UI stories only]** Verify in browser using Playwright CLI
+      <% } else if (playwright === 'mcp') { -%>
 - [ ] **[UI stories only]** Verify in browser using Playwright MCP tools
+      <% } else if (playwright) { -%>
+- [ ] **[UI stories only]** Verify in browser
+      <% } -%>
 ```
 
 **Important:**
 
 - Acceptance criteria must be verifiable, not vague. "Works correctly" is bad. "Button shows confirmation dialog before deleting" is good.
+  <% if (playwright === 'cli') { -%>
+- **For any story with UI changes:** Always include "Verify in browser using Playwright CLI" as acceptance criteria.
+  <% } else if (playwright === 'mcp') { -%>
 - **For any story with UI changes:** Always include "Verify in browser using Playwright MCP tools" as acceptance criteria.
+  <% } else if (playwright) { -%>
+- **For any story with UI changes:** Always include "Verify in browser" as acceptance criteria.
+  <% } -%>
 
 ### 4. Functional Requirements
 

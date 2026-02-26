@@ -88,21 +88,21 @@ backpressureCommands: [
 
 Docker container configuration. Controls the environment Ralph runs in.
 
-| Key              | Type                     | Default                                              | Purpose                                                                                                |
-| ---------------- | ------------------------ | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `name`           | `string`                 | `'ralph-container'`                                  | Docker container name. Change if running multiple Ralph instances                                      |
-| `baseImage`      | `string`                 | `'node:22-bookworm'`                                 | Base Docker image. Use a different Node version or distro if needed                                    |
-| `user`           | `string`                 | `'sandbox'`                                          | Container user. Default creates `sandbox` (UID 1000). Set to existing user (e.g. `'node'`) to reuse it |
-| `systemPackages` | `string[]`               | `[]`                                                 | APT packages to install (e.g., `['postgresql-client', 'redis-tools']`)                                 |
-| `playwright`     | `boolean`                | `false`                                              | Enable Playwright browser testing. Auto-adds `SYS_ADMIN` capability and sets `shmSize` to `'2gb'`      |
-| `networkMode`    | `string`                 | `'host'`                                             | Docker network mode. Use `'bridge'` if host networking causes conflicts                                |
-| `env`            | `Record<string, string>` | `{}`                                                 | Environment variables injected into the container                                                      |
-| `shmSize`        | `string`                 | `'64m'`                                              | Shared memory size. Auto-upgraded to `'2gb'` when `playwright: true`                                   |
-| `capabilities`   | `string[]`               | `[]`                                                 | Docker capabilities (e.g., `['SYS_ADMIN']`). Auto-added when `playwright: true`                        |
-| `volumes`        | `string[]`               | `[]`                                                 | Additional Docker volume mounts (standard Docker `-v` syntax)                                          |
-| `shadowVolumes`  | `string[]`               | `[]`                                                 | Paths to exclude from the project mount using anonymous volumes (see below)                            |
-| `persistVolumes` | `Record<string, string>` | `{ 'ralph-claude-config': '/home/sandbox/.claude' }` | Named volumes that persist across container restarts. Key = volume name, value = container path        |
-| `hooks`          | `ContainerHooks`         | `{}`                                                 | Dockerfile build hooks (see below)                                                                     |
+| Key              | Type                        | Default                                              | Purpose                                                                                                                                                                                   |
+| ---------------- | --------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`           | `string`                    | `'ralph-container'`                                  | Docker container name. Change if running multiple Ralph instances                                                                                                                         |
+| `baseImage`      | `string`                    | `'node:22-bookworm'`                                 | Base Docker image. Use a different Node version or distro if needed                                                                                                                       |
+| `user`           | `string`                    | `'sandbox'`                                          | Container user. Default creates `sandbox` (UID 1000). Set to existing user (e.g. `'node'`) to reuse it                                                                                    |
+| `systemPackages` | `string[]`                  | `[]`                                                 | APT packages to install (e.g., `['postgresql-client', 'redis-tools']`)                                                                                                                    |
+| `playwright`     | `boolean \| 'cli' \| 'mcp'` | `false`                                              | Enable Playwright browser testing. `true` or `'cli'` uses @playwright/cli (preferred). `'mcp'` uses Playwright MCP server. Auto-adds `SYS_ADMIN` capability and sets `shmSize` to `'2gb'` |
+| `networkMode`    | `string`                    | `'host'`                                             | Docker network mode. Use `'bridge'` if host networking causes conflicts                                                                                                                   |
+| `env`            | `Record<string, string>`    | `{}`                                                 | Environment variables injected into the container                                                                                                                                         |
+| `shmSize`        | `string`                    | `'64m'`                                              | Shared memory size. Auto-upgraded to `'2gb'` when `playwright` is enabled                                                                                                                 |
+| `capabilities`   | `string[]`                  | `[]`                                                 | Docker capabilities (e.g., `['SYS_ADMIN']`). Auto-added when `playwright` is enabled                                                                                                      |
+| `volumes`        | `string[]`                  | `[]`                                                 | Additional Docker volume mounts (standard Docker `-v` syntax)                                                                                                                             |
+| `shadowVolumes`  | `string[]`                  | `[]`                                                 | Paths to exclude from the project mount using anonymous volumes (see below)                                                                                                               |
+| `persistVolumes` | `Record<string, string>`    | `{ 'ralph-claude-config': '/home/sandbox/.claude' }` | Named volumes that persist across container restarts. Key = volume name, value = container path                                                                                           |
+| `hooks`          | `ContainerHooks`            | `{}`                                                 | Dockerfile build hooks (see below)                                                                                                                                                        |
 
 #### Shadow Volumes
 
@@ -161,7 +161,7 @@ container: {
 **When to update `container`:**
 
 - The project needs system-level dependencies → `systemPackages`
-- The project uses Playwright or browser-based tests → `playwright: true`
+- The project uses Playwright or browser-based tests → `playwright: true` (CLI mode, preferred) or `playwright: 'mcp'`
 - Need API keys or secrets in the container → `env` (prefer secrets management over hardcoding)
 - Running multiple Ralph instances side-by-side → change `name`
 - Need to persist additional directories across runs → `persistVolumes`
@@ -266,7 +266,7 @@ backpressureCommands: [
 
 ```typescript
 container: {
-  playwright: true,
+  playwright: true, // CLI mode (default, preferred) — or 'mcp' for Playwright MCP
 }
 ```
 

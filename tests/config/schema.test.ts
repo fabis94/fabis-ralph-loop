@@ -60,9 +60,50 @@ describe('ralphLoopConfigSchema', () => {
     if (result.success) {
       expect(result.data.container.name).toBe('my-ralph')
       expect(result.data.container.systemPackages).toEqual(['postgresql-client'])
+      expect(result.data.container.playwright).toBe('cli')
       expect(result.data.defaults.model).toBe('opus')
       expect(result.data.output.mode).toBe('uac')
     }
+  })
+
+  it('normalizes playwright: true to "cli"', () => {
+    const result = ralphLoopConfigSchema.parse({
+      project: { name: 'Test' },
+      container: { name: 'test', playwright: true },
+    })
+    expect(result.container.playwright).toBe('cli')
+  })
+
+  it('accepts playwright: "cli"', () => {
+    const result = ralphLoopConfigSchema.parse({
+      project: { name: 'Test' },
+      container: { name: 'test', playwright: 'cli' },
+    })
+    expect(result.container.playwright).toBe('cli')
+  })
+
+  it('accepts playwright: "mcp"', () => {
+    const result = ralphLoopConfigSchema.parse({
+      project: { name: 'Test' },
+      container: { name: 'test', playwright: 'mcp' },
+    })
+    expect(result.container.playwright).toBe('mcp')
+  })
+
+  it('keeps playwright: false as false', () => {
+    const result = ralphLoopConfigSchema.parse({
+      project: { name: 'Test' },
+      container: { name: 'test', playwright: false },
+    })
+    expect(result.container.playwright).toBe(false)
+  })
+
+  it('rejects invalid playwright string', () => {
+    const result = ralphLoopConfigSchema.safeParse({
+      project: { name: 'Test' },
+      container: { name: 'test', playwright: 'invalid' },
+    })
+    expect(result.success).toBe(false)
   })
 
   it('rejects missing project.name', () => {
