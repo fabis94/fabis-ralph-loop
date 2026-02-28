@@ -8,6 +8,8 @@ export async function generateEntrypoint(config: ResolvedConfig): Promise<string
     agent: config.defaults.agent,
     shadowVolumes: config.container.shadowVolumes,
     entrypointSetup: config.container.hooks.entrypointSetup,
+    sslCerts: !!config.container.sslCerts,
+    playwright: config.container.playwright,
     user,
     homeDir: `/home/${user}`,
   })

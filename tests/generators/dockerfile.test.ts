@@ -122,6 +122,34 @@ describe('generateDockerfile', () => {
     expect(result).toContain('/usr/local/bin/run-fabis-ralph-loop')
   })
 
+  it('does not include libnss3-tools without sslCerts', async () => {
+    const config = makeConfig({
+      container: { name: 'test', playwright: true },
+    })
+    const result = await generateDockerfile(config)
+
+    expect(result).not.toContain('libnss3-tools')
+  })
+
+  it('includes libnss3-tools when sslCerts and playwright are both set', async () => {
+    const config = makeConfig({
+      container: { name: 'test', playwright: true, sslCerts: '.certs' },
+    })
+    const result = await generateDockerfile(config)
+
+    expect(result).toContain('libnss3-tools')
+    expect(result).toContain('chromium')
+  })
+
+  it('does not include libnss3-tools when sslCerts set without playwright', async () => {
+    const config = makeConfig({
+      container: { name: 'test', sslCerts: '.certs' },
+    })
+    const result = await generateDockerfile(config)
+
+    expect(result).not.toContain('libnss3-tools')
+  })
+
   it('includes generated header', async () => {
     const config = makeConfig()
     const result = await generateDockerfile(config)

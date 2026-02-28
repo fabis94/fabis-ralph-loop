@@ -24,6 +24,7 @@ const containerSchema = z.object({
       if (val === false) return false as const
       return val
     }),
+  sslCerts: z.string().optional(),
   networkMode: z.string().default('host'),
   env: z.record(z.string(), z.string()).default({}),
   shmSize: z.string().default('64m'),

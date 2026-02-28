@@ -24,6 +24,9 @@ services:
       - <%= name %>:<%= path %>
 <% } -%>
       - ${HOME}/.claude/plans:<%= homeDir %>/host-plans:ro
+<% if (sslCertsVolume) { -%>
+      - <%= sslCertsVolume %>
+<% } -%>
 <% for (const v of extraVolumes) { -%>
       - <%= v %>
 <% } -%>

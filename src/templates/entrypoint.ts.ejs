@@ -35,6 +35,43 @@ if (!process.env.CLAUDE_CODE_OAUTH_TOKEN) {
   process.exit(1)
 }
 console.log('Auth token present.')
+<% if (sslCerts) { %>
+// === SSL Certificate Trust ===
+const sslCertsDir = '/tmp/ssl-certs'
+if (existsSync(sslCertsDir)) {
+  try {
+    execSync('sudo mkdir -p /usr/local/share/ca-certificates/custom', { stdio: 'pipe' })
+    execSync(`
+      for f in ${sslCertsDir}/*.crt ${sslCertsDir}/*.pem ${sslCertsDir}/*.cer; do
+        [ -f "$f" ] && sudo cp "$f" "/usr/local/share/ca-certificates/custom/$(basename "\${f%.*}").crt"
+      done
+    `, { stdio: 'pipe', shell: '/bin/bash' })
+    execSync('sudo update-ca-certificates', { stdio: 'pipe' })
+    process.env.NODE_EXTRA_CA_CERTS = '/etc/ssl/certs/ca-certificates.crt'
+    console.log('SSL certificates trusted (system + Node.js).')
+<% if (playwright) { %>
+    // Also trust in Chromium's NSS database
+    try {
+      const nssDb = `${process.env.HOME || '<%= homeDir %>'}/.pki/nssdb`
+      execSync(`mkdir -p ${nssDb}`, { stdio: 'pipe' })
+      execSync(`certutil -d sql:${nssDb} -N --empty-password 2>/dev/null || true`, { stdio: 'pipe', shell: '/bin/bash' })
+      execSync(`
+        for f in ${sslCertsDir}/*.crt ${sslCertsDir}/*.pem ${sslCertsDir}/*.cer; do
+          [ -f "$f" ] && certutil -d sql:${nssDb} -A -t "CT,C,C" -n "$(basename "$f")" -i "$f" 2>/dev/null || true
+        done
+      `, { stdio: 'pipe', shell: '/bin/bash' })
+      console.log('SSL certificates trusted (Chromium NSS).')
+    } catch {
+      console.warn('Warning: Could not set up NSS cert database for Chromium.')
+    }
+<% } -%>
+  } catch (error) {
+    console.warn('Warning: Could not trust SSL certificates:', error)
+  }
+} else {
+  console.warn('Warning: sslCerts configured but /tmp/ssl-certs not mounted.')
+}
+<% } -%>
 
 // === Chown shadow volumes ===
 const shadowVolumes: string[] = <%- JSON.stringify(shadowVolumes) %>

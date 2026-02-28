@@ -79,6 +79,7 @@ export default defineConfig({
   container: {
     name: 'my-project-ralph',
     playwright: true, // auto-configures Playwright CLI + headless Chromium (or 'mcp' for MCP mode)
+    sslCerts: '.certs', // trust custom SSL certs in container (for local HTTPS dev servers)
     systemPackages: ['ripgrep'],
     env: { NODE_ENV: 'development' },
     hooks: {

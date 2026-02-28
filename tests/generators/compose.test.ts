@@ -98,6 +98,31 @@ describe('generateCompose', () => {
     expect(result).toContain('/home/sandbox/host-plans:ro')
   })
 
+  it('includes sslCerts volume mount with relative path', async () => {
+    const config = makeConfig({
+      container: { name: 'test', sslCerts: '.certs' },
+    })
+    const result = await generateCompose(config)
+
+    expect(result).toContain('../.certs:/tmp/ssl-certs:ro')
+  })
+
+  it('includes sslCerts volume mount with absolute path', async () => {
+    const config = makeConfig({
+      container: { name: 'test', sslCerts: '/home/user/certs' },
+    })
+    const result = await generateCompose(config)
+
+    expect(result).toContain('/home/user/certs:/tmp/ssl-certs:ro')
+  })
+
+  it('omits sslCerts volume when not configured', async () => {
+    const config = makeConfig()
+    const result = await generateCompose(config)
+
+    expect(result).not.toContain('ssl-certs')
+  })
+
   it('resolves paths for custom user', async () => {
     const config = makeConfig({
       container: { name: 'test', user: 'node' },

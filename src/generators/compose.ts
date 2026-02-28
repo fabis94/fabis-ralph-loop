@@ -1,5 +1,14 @@
+import { isAbsolute } from 'node:path'
 import { renderTemplate, GENERATED_HEADER } from '../utils/template.js'
 import type { ResolvedConfig } from '../config/schema.js'
+
+/**
+ * Resolve a host path for use in docker-compose volumes.
+ * Relative paths get `../` prepended since compose runs from `.ralph-container/`.
+ */
+function resolveHostPath(hostPath: string): string {
+  return isAbsolute(hostPath) ? hostPath : `../${hostPath}`
+}
 
 export async function generateCompose(config: ResolvedConfig): Promise<string> {
   const homeDir = `/home/${config.container.user}`
@@ -15,6 +24,10 @@ export async function generateCompose(config: ResolvedConfig): Promise<string> {
     ),
   }
 
+  const sslCertsVolume = config.container.sslCerts
+    ? `${resolveHostPath(config.container.sslCerts)}:/tmp/ssl-certs:ro`
+    : undefined
+
   return renderTemplate('docker-compose.yml.ejs', {
     generatedHeader: GENERATED_HEADER,
     containerName: config.container.name,
@@ -24,6 +37,7 @@ export async function generateCompose(config: ResolvedConfig): Promise<string> {
     shadowVolumes: config.container.shadowVolumes,
     persistVolumes,
     extraVolumes: config.container.volumes,
+    sslCertsVolume,
     env: config.container.env,
     homeDir,
   })

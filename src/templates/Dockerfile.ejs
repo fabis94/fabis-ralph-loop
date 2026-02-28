@@ -37,6 +37,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libcairo2 \
     libasound2 \
     libxshmfence1 \
+<% if (sslCerts) { -%>
+    libnss3-tools \
+<% } -%>
     && rm -rf /var/lib/apt/lists/*
 <% } -%>
 <% for (const instruction of hooks.rootSetup) { %>

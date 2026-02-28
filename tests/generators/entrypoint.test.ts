@@ -59,6 +59,38 @@ describe('generateEntrypoint', () => {
     expect(result).not.toContain('process.env.RALPH_SHADOW_VOLUMES')
   })
 
+  it('includes SSL cert trust section when sslCerts is set', async () => {
+    const config = makeConfig({
+      container: { name: 'test', sslCerts: '.certs' },
+    })
+    const result = await generateEntrypoint(config)
+
+    expect(result).toContain('SSL Certificate Trust')
+    expect(result).toContain('update-ca-certificates')
+    expect(result).toContain('NODE_EXTRA_CA_CERTS')
+    expect(result).not.toContain('certutil')
+  })
+
+  it('includes Chromium NSS setup when sslCerts and playwright are both set', async () => {
+    const config = makeConfig({
+      container: { name: 'test', sslCerts: '.certs', playwright: true },
+    })
+    const result = await generateEntrypoint(config)
+
+    expect(result).toContain('SSL Certificate Trust')
+    expect(result).toContain('update-ca-certificates')
+    expect(result).toContain('certutil')
+    expect(result).toContain('Chromium NSS')
+  })
+
+  it('omits SSL cert trust section when sslCerts is not set', async () => {
+    const config = makeConfig()
+    const result = await generateEntrypoint(config)
+
+    expect(result).not.toContain('SSL Certificate Trust')
+    expect(result).not.toContain('update-ca-certificates')
+  })
+
   it('uses configured user for chown commands', async () => {
     const config = makeConfig({
       container: {

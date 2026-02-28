@@ -95,6 +95,7 @@ Docker container configuration. Controls the environment Ralph runs in.
 | `user`           | `string`                    | `'sandbox'`                                          | Container user. Default creates `sandbox` (UID 1000). Set to existing user (e.g. `'node'`) to reuse it                                                                                    |
 | `systemPackages` | `string[]`                  | `[]`                                                 | APT packages to install (e.g., `['postgresql-client', 'redis-tools']`)                                                                                                                    |
 | `playwright`     | `boolean \| 'cli' \| 'mcp'` | `false`                                              | Enable Playwright browser testing. `true` or `'cli'` uses @playwright/cli (preferred). `'mcp'` uses Playwright MCP server. Auto-adds `SYS_ADMIN` capability and sets `shmSize` to `'2gb'` |
+| `sslCerts`       | `string`                    | `undefined`                                          | Host path to SSL certificate directory. Certs are trusted system-wide in the container. When combined with `playwright`, also adds certs to Chromium's NSS store                          |
 | `networkMode`    | `string`                    | `'host'`                                             | Docker network mode. Use `'bridge'` if host networking causes conflicts                                                                                                                   |
 | `env`            | `Record<string, string>`    | `{}`                                                 | Environment variables injected into the container                                                                                                                                         |
 | `shmSize`        | `string`                    | `'64m'`                                              | Shared memory size. Auto-upgraded to `'2gb'` when `playwright` is enabled                                                                                                                 |
@@ -162,6 +163,7 @@ container: {
 
 - The project needs system-level dependencies → `systemPackages`
 - The project uses Playwright or browser-based tests → `playwright: true` (CLI mode, preferred) or `playwright: 'mcp'`
+- The project uses self-signed SSL certificates (e.g., local HTTPS dev server) → `sslCerts` (path to cert directory)
 - Need API keys or secrets in the container → `env` (prefer secrets management over hardcoding)
 - Running multiple Ralph instances side-by-side → change `name`
 - Need to persist additional directories across runs → `persistVolumes`
