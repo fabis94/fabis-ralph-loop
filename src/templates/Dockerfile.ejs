@@ -21,26 +21,14 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs
 <% } -%>
 <% if (playwright) { %>
-# === Playwright/Chromium dependencies ===
+# === Google Chrome (Playwright uses /opt/google/chrome/chrome by default) ===
 # hadolint ignore=DL3008
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
-    fonts-liberation \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-0 \
-    libcups2 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libpango-1.0-0 \
-    libcairo2 \
-    libasound2 \
-    libxshmfence1 \
+RUN curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -o /tmp/chrome.deb \
+    && apt-get update && apt-get install -y --no-install-recommends /tmp/chrome.deb \
 <% if (sslCerts) { -%>
     libnss3-tools \
 <% } -%>
-    && rm -rf /var/lib/apt/lists/*
+    && rm /tmp/chrome.deb && rm -rf /var/lib/apt/lists/*
 <% } -%>
 <% for (const instruction of hooks.rootSetup) { %>
 <%= instruction %>
@@ -99,7 +87,6 @@ RUN npm install -g @playwright/cli@latest \
 # === Environment ===
 ENV IS_SANDBOX=1
 <% if (playwright) { -%>
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 <% } %>
 # === Entrypoint ===

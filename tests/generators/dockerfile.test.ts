@@ -15,7 +15,7 @@ describe('generateDockerfile', () => {
     expect(result).toContain('entrypoint.ts')
     // Should NOT install Node separately for node base
     expect(result).not.toContain('nodesource')
-    expect(result).not.toContain('chromium')
+    expect(result).not.toContain('google-chrome-stable')
   })
 
   it('installs Node for non-node base images', async () => {
@@ -34,9 +34,8 @@ describe('generateDockerfile', () => {
     })
     const result = await generateDockerfile(config)
 
-    expect(result).toContain('chromium')
-    expect(result).toContain('fonts-liberation')
-    expect(result).toContain('PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH')
+    expect(result).toContain('google-chrome-stable')
+    expect(result).toContain('PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD')
     expect(result).toContain('@playwright/mcp')
   })
 
@@ -138,7 +137,7 @@ describe('generateDockerfile', () => {
     const result = await generateDockerfile(config)
 
     expect(result).toContain('libnss3-tools')
-    expect(result).toContain('chromium')
+    expect(result).toContain('google-chrome-stable')
   })
 
   it('does not include libnss3-tools when sslCerts set without playwright', async () => {

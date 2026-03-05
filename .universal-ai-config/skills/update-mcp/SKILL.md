@@ -102,7 +102,7 @@ export default defineConfig({
       '@playwright/mcp@latest',
       '--headless',
       '--executable-path',
-      '/usr/bin/chromium',
+      '/opt/google/chrome/chrome',
     ],
   },
 })
