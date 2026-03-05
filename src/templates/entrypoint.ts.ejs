@@ -43,7 +43,7 @@ if (existsSync(sslCertsDir)) {
     execSync('sudo mkdir -p /usr/local/share/ca-certificates/custom', { stdio: 'pipe' })
     execSync(`
       for f in ${sslCertsDir}/*.crt ${sslCertsDir}/*.pem ${sslCertsDir}/*.cer; do
-        [ -f "$f" ] && sudo cp "$f" "/usr/local/share/ca-certificates/custom/$(basename "\${f%.*}").crt"
+        [ -f "$f" ] && openssl x509 -in "$f" -noout 2>/dev/null && sudo cp "$f" "/usr/local/share/ca-certificates/custom/$(basename "\${f%.*}").crt"
       done
     `, { stdio: 'pipe', shell: '/bin/bash' })
     execSync('sudo update-ca-certificates', { stdio: 'pipe' })
@@ -57,7 +57,7 @@ if (existsSync(sslCertsDir)) {
       execSync(`certutil -d sql:${nssDb} -N --empty-password 2>/dev/null || true`, { stdio: 'pipe', shell: '/bin/bash' })
       execSync(`
         for f in ${sslCertsDir}/*.crt ${sslCertsDir}/*.pem ${sslCertsDir}/*.cer; do
-          [ -f "$f" ] && certutil -d sql:${nssDb} -A -t "CT,C,C" -n "$(basename "$f")" -i "$f" 2>/dev/null || true
+          [ -f "$f" ] && openssl x509 -in "$f" -noout 2>/dev/null && certutil -d sql:${nssDb} -A -t "CT,C,C" -n "$(basename "$f")" -i "$f" 2>/dev/null || true
         done
       `, { stdio: 'pipe', shell: '/bin/bash' })
       console.log('SSL certificates trusted (Chromium NSS).')
