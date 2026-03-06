@@ -30,6 +30,12 @@ RUN curl -fsSL https://dl.google.com/linux/direct/google-chrome-stable_current_a
 <% } -%>
     && rm /tmp/chrome.deb && rm -rf /var/lib/apt/lists/*
 <% } -%>
+<% if (blockedDomains.length > 0) { %>
+# === DNS-level domain blocking ===
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends dnsmasq \
+    && rm -rf /var/lib/apt/lists/*
+<% } -%>
 <% for (const instruction of hooks.rootSetup) { %>
 <%= instruction %>
 <% } -%>

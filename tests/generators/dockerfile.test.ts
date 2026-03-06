@@ -149,6 +149,23 @@ describe('generateDockerfile', () => {
     expect(result).not.toContain('libnss3-tools')
   })
 
+  it('installs dnsmasq when blockedDomains configured', async () => {
+    const config = makeConfig({
+      container: { name: 'test', blockedDomains: ['figma.com', 'linear.app'] },
+    })
+    const result = await generateDockerfile(config)
+
+    expect(result).toContain('dnsmasq')
+    expect(result).toContain('DNS-level domain blocking')
+  })
+
+  it('does not install dnsmasq when no blockedDomains', async () => {
+    const config = makeConfig()
+    const result = await generateDockerfile(config)
+
+    expect(result).not.toContain('dnsmasq')
+  })
+
   it('includes generated header', async () => {
     const config = makeConfig()
     const result = await generateDockerfile(config)

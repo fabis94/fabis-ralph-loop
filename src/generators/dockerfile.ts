@@ -18,6 +18,7 @@ export async function generateDockerfile(config: ResolvedConfig): Promise<string
     installNode: !isNodeBaseImage(config.container.baseImage),
     playwright: config.container.playwright,
     sslCerts: !!config.container.sslCerts,
+    blockedDomains: config.container.blockedDomains,
     hooks: config.container.hooks,
     user,
     createUser: user === 'sandbox',

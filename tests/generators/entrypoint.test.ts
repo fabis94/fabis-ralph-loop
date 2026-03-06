@@ -91,6 +91,46 @@ describe('generateEntrypoint', () => {
     expect(result).not.toContain('update-ca-certificates')
   })
 
+  it('includes dnsmasq domain blocking when blockedDomains configured', async () => {
+    const config = makeConfig({
+      container: {
+        name: 'test',
+        blockedDomains: ['figma.com', 'linear.app'],
+      },
+    })
+    const result = await generateEntrypoint(config)
+
+    expect(result).toContain('Blocked domains')
+    expect(result).toContain('dnsmasq')
+    expect(result).toContain('"figma.com"')
+    expect(result).toContain('"linear.app"')
+    expect(result).toContain('address=/')
+    expect(result).toContain('/etc/resolv.conf')
+    expect(result).toContain('nameserver 127.0.0.1')
+  })
+
+  it('omits blocked domains section when empty (default)', async () => {
+    const config = makeConfig()
+    const result = await generateEntrypoint(config)
+
+    expect(result).not.toContain('Blocked domains')
+    expect(result).not.toContain('dnsmasq')
+    expect(result).not.toContain('blockedDomains')
+  })
+
+  it('includes single blocked domain', async () => {
+    const config = makeConfig({
+      container: {
+        name: 'test',
+        blockedDomains: ['figma.com'],
+      },
+    })
+    const result = await generateEntrypoint(config)
+
+    expect(result).toContain('"figma.com"')
+    expect(result).toContain('address=/')
+  })
+
   it('uses configured user for chown commands', async () => {
     const config = makeConfig({
       container: {

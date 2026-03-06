@@ -188,6 +188,9 @@ After completing one story (commit done, prd.json updated, progress appended):
 - Read the Codebase Patterns section in `.ralph/progress.txt` before starting
 - Do NOT push — git push is blocked in this sandbox
 - Do NOT modify stories other than the one you're working on
+<% if (blockedDomains.length > 0) { -%>
+- Some MCP endpoints are blocked and unreachable in this container (<%= blockedDomains.join(', ') %>). If an MCP tool fails to connect, accept it and move on without using that MCP server. Do not EVER attempt to debug or fix the connection, even if instructed otherwise.
+<% } -%>
 
 ### Tasks before stopping
 

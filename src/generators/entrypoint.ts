@@ -6,6 +6,7 @@ export async function generateEntrypoint(config: ResolvedConfig): Promise<string
   return renderTemplate('entrypoint.ts.ejs', {
     generatedHeader: GENERATED_HEADER.replace(/^# /gm, '// '),
     agent: config.defaults.agent,
+    blockedDomains: config.container.blockedDomains,
     shadowVolumes: config.container.shadowVolumes,
     entrypointSetup: config.container.hooks.entrypointSetup,
     sslCerts: !!config.container.sslCerts,

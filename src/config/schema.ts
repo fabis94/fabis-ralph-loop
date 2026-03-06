@@ -26,6 +26,7 @@ const containerSchema = z.object({
     }),
   sslCerts: z.string().optional(),
   networkMode: z.string().default('host'),
+  blockedDomains: z.array(z.string().min(1)).default([]),
   env: z.record(z.string(), z.string()).default({}),
   shmSize: z.string().default('64m'),
   capabilities: z.array(z.string()).default([]),

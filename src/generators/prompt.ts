@@ -11,6 +11,7 @@ export async function generatePrompt(config: ResolvedConfig): Promise<string> {
     backpressureCommands: config.project.backpressureCommands,
     openAppSkills: normalizeOpenAppSkills(config.project.openAppSkill),
     playwright: config.container.playwright,
+    blockedDomains: config.container.blockedDomains,
     completionSignal: config.defaults.completionSignal,
   })
 }

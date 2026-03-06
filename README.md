@@ -80,6 +80,7 @@ export default defineConfig({
     name: 'my-project-ralph',
     playwright: true, // auto-configures Playwright CLI + headless Chromium (or 'mcp' for MCP mode)
     sslCerts: '.certs', // trust custom SSL certs in container (for local HTTPS dev servers)
+    blockedDomains: ['figma.com', 'linear.app'], // block MCP server domains not needed in autonomous mode
     systemPackages: ['ripgrep'],
     env: { NODE_ENV: 'development' },
     hooks: {
