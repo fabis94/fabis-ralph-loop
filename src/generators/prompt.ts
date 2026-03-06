@@ -1,5 +1,6 @@
 import { renderTemplate, GENERATED_HEADER } from '../utils/template.js'
 import type { ResolvedConfig } from '../config/schema.js'
+import { normalizeOpenAppSkills } from './normalize.js'
 
 export async function generatePrompt(config: ResolvedConfig): Promise<string> {
   return renderTemplate('ralph-prompt.md.ejs', {
@@ -8,7 +9,7 @@ export async function generatePrompt(config: ResolvedConfig): Promise<string> {
     projectDescription: config.project.description,
     projectContext: config.project.context,
     backpressureCommands: config.project.backpressureCommands,
-    openAppSkill: config.project.openAppSkill,
+    openAppSkills: normalizeOpenAppSkills(config.project.openAppSkill),
     playwright: config.container.playwright,
     completionSignal: config.defaults.completionSignal,
   })

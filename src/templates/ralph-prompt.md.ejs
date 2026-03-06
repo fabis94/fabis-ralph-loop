@@ -74,7 +74,7 @@ Only add patterns that are **general and reusable**, not story-specific details.
 - Keep changes focused and minimal
 - Follow existing code patterns
 - Use `import type { ... }` for type-only imports (separate from value imports)
-<% if (openAppSkill || playwright) { %>
+<% if (openAppSkills.length > 0 || playwright) { %>
 ## Browser Testing
 <% if (playwright === 'cli') { %>
 This container has `@playwright/cli` installed with headless Chromium. **Do NOT use Playwright MCP or Chrome MCP tools — use the CLI instead.**
@@ -130,8 +130,13 @@ For any story that changes UI:
 1. Ensure the dev servers are running before testing
 2. Use `playwright-cli` to navigate and verify the changes
 3. Capture a screenshot if helpful for the progress log
-<% if (openAppSkill) { %>
-Read `<%= openAppSkill %>` for the full app launch and authentication procedure.
+<% if (openAppSkills.length === 1) { %>
+Read `<%= openAppSkills[0] %>` for the full app launch and authentication procedure.
+<% } else if (openAppSkills.length > 1) { %>
+Multiple app skills are available. Read the appropriate one based on which app you need to verify:
+<% openAppSkills.forEach(function(skill) { %>
+- `<%= skill %>`
+<% }) %>
 <% } -%>
 <% } else if (playwright === 'mcp') { %>
 This container has **Playwright MCP** configured with headless Chromium. For any story that changes UI:
@@ -140,12 +145,24 @@ This container has **Playwright MCP** configured with headless Chromium. For any
 2. Navigate to the relevant page
 3. Verify the UI changes work as expected
 4. Take a screenshot if helpful for the progress log
-<% if (openAppSkill) { %>
-Read `<%= openAppSkill %>` for the full app launch and authentication procedure.
+<% if (openAppSkills.length === 1) { %>
+Read `<%= openAppSkills[0] %>` for the full app launch and authentication procedure.
+<% } else if (openAppSkills.length > 1) { %>
+Multiple app skills are available. Read the appropriate one based on which app you need to verify:
+<% openAppSkills.forEach(function(skill) { %>
+- `<%= skill %>`
+<% }) %>
 <% } -%>
-<% } else if (openAppSkill) { %>
+<% } else if (openAppSkills.length > 0) { %>
 For any story that changes UI, verify it works in the browser if you have browser tools configured.
-Read `<%= openAppSkill %>` for the full app launch and authentication procedure.
+<% if (openAppSkills.length === 1) { %>
+Read `<%= openAppSkills[0] %>` for the full app launch and authentication procedure.
+<% } else { %>
+Multiple app skills are available. Read the appropriate one based on which app you need to verify:
+<% openAppSkills.forEach(function(skill) { %>
+- `<%= skill %>`
+<% }) %>
+<% } %>
 
 If no browser tools are available, note in your progress report that manual browser verification is needed.
 <% } -%>

@@ -54,7 +54,7 @@ const projectSchema = z.object({
   description: z.string().default(''),
   context: z.string().default(''),
   backpressureCommands: z.array(backpressureCommandSchema).default([]),
-  openAppSkill: z.string().default(''),
+  openAppSkill: z.union([z.string(), z.array(z.string().min(1))]).default(''),
 })
 
 const outputSchema = z.object({

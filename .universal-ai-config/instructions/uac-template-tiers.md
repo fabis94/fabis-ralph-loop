@@ -39,10 +39,10 @@ These are UAC templates **bundled with the package** and delivered to consumers.
 
 Shipped templates support two levels of EJS that are processed at different times:
 
-| Level       | Syntax in source     | Processed by                                            | Variables                                                                                            |
-| ----------- | -------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Level 1** | `<%% %>` `<%%= %>`   | `ralph-loop generate`                                   | `backpressureCommands`, `projectName`, `projectContext`, `openAppSkill`, `playwright`, full `config` |
-| **Level 2** | `<%%% %>` `<%%%= %>` | `uac generate` (or UAC programmatic API in direct mode) | `target`, path helpers, UAC config variables                                                         |
+| Level       | Syntax in source     | Processed by                                            | Variables                                                                                             |
+| ----------- | -------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Level 1** | `<%% %>` `<%%= %>`   | `ralph-loop generate`                                   | `backpressureCommands`, `projectName`, `projectContext`, `openAppSkills`, `playwright`, full `config` |
+| **Level 2** | `<%%% %>` `<%%%= %>` | `uac generate` (or UAC programmatic API in direct mode) | `target`, path helpers, UAC config variables                                                          |
 
 EJS's `<%%%` escape syntax outputs a literal `<%%` after Level 1 rendering — this is how Level 2 survives the first pass.
 
@@ -58,7 +58,7 @@ EJS's `<%%%` escape syntax outputs a literal `<%%` after Level 1 rendering — t
 3. Calls `writeGeneratedFiles()` → writes to `.claude/skills/`
 4. Cleans up temp dir
 
-**Level 1 variables available:** `backpressureCommands`, `projectName`, `projectContext`, `openAppSkill`, `playwright`, `config` (full `ResolvedConfig` object)
+**Level 1 variables available:** `backpressureCommands`, `projectName`, `projectContext`, `openAppSkills`, `playwright`, `config` (full `ResolvedConfig` object)
 
 ## Decision Checklist
 

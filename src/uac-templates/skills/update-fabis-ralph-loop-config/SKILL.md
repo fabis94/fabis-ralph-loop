@@ -45,13 +45,13 @@ export default defineConfig({
 
 The only required top-level key. Defines project identity and quality checks.
 
-| Key                    | Type                    | Default      | Purpose                                                                                                       |
-| ---------------------- | ----------------------- | ------------ | ------------------------------------------------------------------------------------------------------------- |
-| `name`                 | `string`                | **required** | Project name — shown in agent prompts and used as identifier                                                  |
-| `description`          | `string`                | `''`         | One-line project description shown in Ralph agent instructions                                                |
-| `context`              | `string`                | `''`         | Extended project context (tech stack, monorepo structure, conventions). Included verbatim in the Ralph prompt |
-| `backpressureCommands` | `BackpressureCommand[]` | `[]`         | Quality check commands Ralph runs after each story (see below)                                                |
-| `openAppSkill`         | `string`                | `''`         | Path to a skill file for opening the app in a browser (used for visual verification)                          |
+| Key                    | Type                    | Default      | Purpose                                                                                                                                    |
+| ---------------------- | ----------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                 | `string`                | **required** | Project name — shown in agent prompts and used as identifier                                                                               |
+| `description`          | `string`                | `''`         | One-line project description shown in Ralph agent instructions                                                                             |
+| `context`              | `string`                | `''`         | Extended project context (tech stack, monorepo structure, conventions). Included verbatim in the Ralph prompt                              |
+| `backpressureCommands` | `BackpressureCommand[]` | `[]`         | Quality check commands Ralph runs after each story (see below)                                                                             |
+| `openAppSkill`         | `string \| string[]`    | `''`         | Path(s) to skill file(s) for opening app(s) in a browser. Use an array when multiple apps need verification (e.g. main app, admin backend) |
 
 #### Backpressure Commands
 

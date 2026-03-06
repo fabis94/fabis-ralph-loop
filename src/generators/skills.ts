@@ -6,6 +6,7 @@ import { generate, writeGeneratedFiles } from 'universal-ai-config'
 import type { InMemoryTemplate } from 'universal-ai-config'
 import type { ResolvedConfig } from '../config/schema.js'
 import { resolveAssetDir } from '../utils/template.js'
+import { normalizeOpenAppSkills } from './normalize.js'
 
 const UAC_TEMPLATES_DIR = resolveAssetDir('uac-templates', import.meta.url)
 
@@ -14,7 +15,7 @@ function buildLevel1Variables(config: ResolvedConfig): Record<string, unknown> {
     backpressureCommands: config.project.backpressureCommands,
     projectName: config.project.name,
     projectContext: config.project.context,
-    openAppSkill: config.project.openAppSkill,
+    openAppSkills: normalizeOpenAppSkills(config.project.openAppSkill),
     playwright: config.container.playwright,
     config,
   }

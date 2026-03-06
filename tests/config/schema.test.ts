@@ -106,6 +106,19 @@ describe('ralphLoopConfigSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('accepts openAppSkill as string array', () => {
+    const result = ralphLoopConfigSchema.parse({
+      project: {
+        name: 'Test',
+        openAppSkill: ['.claude/skills/open-main/SKILL.md', '.claude/skills/open-admin/SKILL.md'],
+      },
+    })
+    expect(result.project.openAppSkill).toEqual([
+      '.claude/skills/open-main/SKILL.md',
+      '.claude/skills/open-admin/SKILL.md',
+    ])
+  })
+
   it('rejects missing project.name', () => {
     const result = ralphLoopConfigSchema.safeParse({
       project: {},

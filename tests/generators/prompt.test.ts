@@ -124,13 +124,30 @@ describe('generatePrompt', () => {
     expect(result).not.toContain('Browser Testing')
   })
 
-  it('references openAppSkill when set', async () => {
+  it('references openAppSkill when set as string', async () => {
     const config = makeConfig({
       project: { name: 'Test', openAppSkill: '.claude/skills/open-app/SKILL.md' },
     })
     const result = await generatePrompt(config)
 
     expect(result).toContain('.claude/skills/open-app/SKILL.md')
+  })
+
+  it('lists multiple openAppSkill entries when set as array', async () => {
+    const config = makeConfig({
+      project: {
+        name: 'Test',
+        openAppSkill: [
+          '.claude/skills/open-main-app/SKILL.md',
+          '.claude/skills/open-admin/SKILL.md',
+        ],
+      },
+    })
+    const result = await generatePrompt(config)
+
+    expect(result).toContain('.claude/skills/open-main-app/SKILL.md')
+    expect(result).toContain('.claude/skills/open-admin/SKILL.md')
+    expect(result).toContain('Multiple app skills are available')
   })
 
   it('includes one-story-per-session constraint', async () => {
