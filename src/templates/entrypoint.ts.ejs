@@ -27,18 +27,15 @@ try {
   const resolv = execSync('cat /etc/resolv.conf', { encoding: 'utf-8' })
   const upstream = resolv.match(/^\s*nameserver\s+(\S+)/m)?.[1] ?? '8.8.8.8'
 
-  // Configure dnsmasq: forward to original upstream, block listed domains
-  const dnsmasqConf = [
-    `server=${upstream}`,
-    'listen-address=127.0.0.1',
-    'bind-interfaces',
-    ...blockedDomains.map((d) => `address=/${d}/0.0.0.0`),
-  ].join('\n')
+  // Start dnsmasq with CLI flags (conf-dir is commented out by default in Debian)
+  const dnsmasqArgs = [
+    `--server=${upstream}`,
+    '--listen-address=127.0.0.1',
+    '--bind-interfaces',
+    ...blockedDomains.map((d) => `--address=/${d}/0.0.0.0`),
+  ].join(' ')
 
-  execSync(`echo '${dnsmasqConf}' | sudo tee /etc/dnsmasq.d/blocked.conf > /dev/null`, { stdio: 'pipe' })
-
-  // Start dnsmasq and point resolver to it
-  execSync('sudo dnsmasq', { stdio: 'pipe' })
+  execSync(`sudo dnsmasq ${dnsmasqArgs}`, { stdio: 'pipe' })
   execSync(`echo 'nameserver 127.0.0.1' | sudo tee /etc/resolv.conf > /dev/null`, { stdio: 'pipe' })
 
   console.log(`Blocked ${blockedDomains.length} domain(s) via dnsmasq: ${blockedDomains.join(', ')}`)
