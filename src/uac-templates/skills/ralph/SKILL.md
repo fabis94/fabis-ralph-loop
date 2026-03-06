@@ -246,10 +246,10 @@ Before writing `.ralph/prd.json`, verify:
 - [ ] Each story is completable in one iteration (small enough)
 - [ ] Stories are ordered by dependency (schema to backend to UI)
 - [ ] Every story has "Typecheck passes" as criterion
-      <% if (playwright === 'cli') { -%>
+<% if (playwright === 'cli') { -%>
 - [ ] UI stories have "Verify in browser using Playwright CLI" as criterion
-      <% } else if (playwright === 'mcp') { -%>
+<% } else if (playwright === 'mcp') { -%>
 - [ ] UI stories have "Verify in browser using Playwright MCP tools" as criterion
-      <% } -%>
+<% } -%>
 - [ ] Acceptance criteria are verifiable (not vague)
 - [ ] No story depends on a later story
